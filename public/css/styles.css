@@ -45,6 +45,9 @@
 
     /* Kachel-Typo: Originalgröße wie die ursprüngliche Prod-Version */
     --tile-fs: 0.875rem;
+
+    /* Körnung des Aurora-Overlays; je Stil überschrieben (0 = clean) */
+    --noise-opacity: 0.05;
 }
 
 :root, [data-theme="dark"] {
@@ -103,6 +106,303 @@
     --tile-tint-glow: hsl(var(--hue) 80% 60% / 0.2);
 }
 
+/* ============================================================
+   Weitere Stile — je Tag- und Nachtansicht.
+   Zweite Theming-Dimension: data-style auf <html>.
+   Aurora (oben) ist der Default; die folgenden Blöcke
+   überschreiben nur die Design-Tokens, das restliche CSS
+   bleibt unberührt. Reihenfolge dark→light je Stil.
+   ============================================================ */
+
+/* -------- Graphit (Apple) — reines Schwarz/Weiß -------- */
+[data-style="mono"][data-theme="dark"] {
+    --accent-h: 211; --accent-s: 100%; --accent-l: 55%;   /* Apple-Blau */
+
+    --bg-0: #000000;
+    --bg-1: #0a0a0a;
+    --bg-2: #151515;
+
+    --surface:        rgba(255, 255, 255, 0.05);
+    --surface-hover:  rgba(255, 255, 255, 0.10);
+    --surface-strong: rgba(28, 28, 30, 0.92);
+    --panel:          rgba(22, 22, 24, 0.98);
+
+    --border:        rgba(255, 255, 255, 0.11);
+    --border-strong: rgba(255, 255, 255, 0.22);
+
+    --text-1: rgba(255, 255, 255, 0.96);
+    --text-2: rgba(255, 255, 255, 0.62);
+    --text-3: rgba(255, 255, 255, 0.40);
+
+    --aurora-1: #0a0a0a;
+    --aurora-2: #050505;
+    --aurora-3: #0f0f0f;
+    --noise-opacity: 0;
+
+    --tile-tint-bg:   hsl(0 0% 11%);
+    --tile-tint-bg-2: hsl(0 0% 7%);
+    --tile-tint-edge: rgba(255, 255, 255, 0.13);
+    --tile-tint-glow: rgba(255, 255, 255, 0.05);
+}
+[data-style="mono"][data-theme="light"] {
+    --accent-h: 211; --accent-s: 100%; --accent-l: 45%;   /* Apple-Blau */
+
+    --bg-0: #ffffff;
+    --bg-1: #fbfbfd;
+    --bg-2: #f5f5f7;
+
+    --surface:        rgba(0, 0, 0, 0.025);
+    --surface-hover:  rgba(0, 0, 0, 0.05);
+    --surface-strong: rgba(255, 255, 255, 0.92);
+    --panel:          rgba(255, 255, 255, 0.99);
+
+    --border:        rgba(0, 0, 0, 0.10);
+    --border-strong: rgba(0, 0, 0, 0.17);
+
+    --text-1: rgba(29, 29, 31, 0.96);
+    --text-2: rgba(29, 29, 31, 0.62);
+    --text-3: rgba(29, 29, 31, 0.42);
+
+    --aurora-1: #f5f5f7;
+    --aurora-2: #fbfbfd;
+    --aurora-3: #f0f0f2;
+    --noise-opacity: 0;
+
+    --tile-tint-bg:   hsl(0 0% 98%);
+    --tile-tint-bg-2: hsl(0 0% 95%);
+    --tile-tint-edge: rgba(0, 0, 0, 0.09);
+    --tile-tint-glow: rgba(0, 0, 0, 0.03);
+}
+
+/* -------- Fluent (Windows 11) — Mica-Grau + Blau -------- */
+[data-style="fluent"][data-theme="dark"] {
+    --accent-h: 206; --accent-s: 100%; --accent-l: 65%;   /* Win-Blau hell */
+
+    --bg-0: #1f1f1f;
+    --bg-1: #272727;
+    --bg-2: #2d2d2d;
+
+    --surface:        rgba(255, 255, 255, 0.05);
+    --surface-hover:  rgba(255, 255, 255, 0.09);
+    --surface-strong: rgba(43, 43, 43, 0.92);
+    --panel:          rgba(44, 44, 44, 0.98);
+
+    --border:        rgba(255, 255, 255, 0.08);
+    --border-strong: rgba(255, 255, 255, 0.16);
+
+    --text-1: rgba(255, 255, 255, 0.95);
+    --text-2: rgba(255, 255, 255, 0.72);
+    --text-3: rgba(255, 255, 255, 0.50);
+
+    --aurora-1: hsl(210, 20%, 18%);
+    --aurora-2: hsl(230, 15%, 15%);
+    --aurora-3: hsl(200, 18%, 16%);
+    --noise-opacity: 0.025;
+
+    --tile-tint-bg:   hsl(210 8% 20%);
+    --tile-tint-bg-2: hsl(210 8% 15%);
+    --tile-tint-edge: hsl(var(--hue) 45% 55% / 0.28);
+    --tile-tint-glow: hsl(var(--hue) 55% 55% / 0.12);
+}
+[data-style="fluent"][data-theme="light"] {
+    --accent-h: 206; --accent-s: 100%; --accent-l: 42%;   /* Win-Blau */
+
+    --bg-0: #f3f3f3;
+    --bg-1: #fafafa;
+    --bg-2: #ededed;
+
+    --surface:        rgba(255, 255, 255, 0.7);
+    --surface-hover:  rgba(255, 255, 255, 0.92);
+    --surface-strong: rgba(251, 251, 251, 0.92);
+    --panel:          rgba(251, 251, 251, 0.99);
+
+    --border:        rgba(0, 0, 0, 0.07);
+    --border-strong: rgba(0, 0, 0, 0.14);
+
+    --text-1: rgba(0, 0, 0, 0.90);
+    --text-2: rgba(0, 0, 0, 0.60);
+    --text-3: rgba(0, 0, 0, 0.42);
+
+    --aurora-1: hsl(210, 40%, 92%);
+    --aurora-2: hsl(230, 35%, 93%);
+    --aurora-3: hsl(200, 40%, 94%);
+    --noise-opacity: 0.02;
+
+    --tile-tint-bg:   hsl(210 20% 97%);
+    --tile-tint-bg-2: hsl(210 15% 93%);
+    --tile-tint-edge: hsl(var(--hue) 50% 55% / 0.30);
+    --tile-tint-glow: hsl(var(--hue) 55% 55% / 0.12);
+}
+
+/* -------- Ubuntu (Linux) — Aubergine + Orange -------- */
+[data-style="ubuntu"][data-theme="dark"] {
+    --accent-h: 14; --accent-s: 82%; --accent-l: 55%;     /* Ubuntu-Orange */
+
+    --bg-0: hsl(325, 20%, 9%);
+    --bg-1: hsl(325, 18%, 12%);
+    --bg-2: hsl(325, 16%, 16%);
+
+    --surface:        rgba(255, 255, 255, 0.05);
+    --surface-hover:  rgba(255, 255, 255, 0.09);
+    --surface-strong: hsl(325 15% 15% / 0.92);
+    --panel:          hsl(325 17% 12% / 0.98);
+
+    --border:        rgba(255, 255, 255, 0.09);
+    --border-strong: rgba(255, 255, 255, 0.18);
+
+    --text-1: rgba(255, 255, 255, 0.95);
+    --text-2: rgba(255, 255, 255, 0.74);
+    --text-3: rgba(255, 255, 255, 0.50);
+
+    --aurora-1: hsl(325, 40%, 18%);
+    --aurora-2: hsl(14, 50%, 16%);
+    --aurora-3: hsl(300, 35%, 14%);
+    --noise-opacity: 0.04;
+
+    --tile-tint-bg:   hsl(325 15% 18%);
+    --tile-tint-bg-2: hsl(325 14% 13%);
+    --tile-tint-edge: hsl(var(--hue) 60% 55% / 0.28);
+    --tile-tint-glow: hsl(var(--hue) 65% 55% / 0.13);
+}
+[data-style="ubuntu"][data-theme="light"] {
+    --accent-h: 14; --accent-s: 78%; --accent-l: 50%;     /* Ubuntu-Orange */
+
+    --bg-0: #faf8f7;
+    --bg-1: #f4efed;
+    --bg-2: #ebe3e0;
+
+    --surface:        rgba(255, 255, 255, 0.7);
+    --surface-hover:  rgba(255, 255, 255, 0.9);
+    --surface-strong: rgba(255, 255, 255, 0.92);
+    --panel:          rgba(253, 251, 250, 0.99);
+
+    --border:        hsl(325 30% 20% / 0.09);
+    --border-strong: hsl(325 30% 20% / 0.18);
+
+    --text-1: hsl(325, 25%, 15%);
+    --text-2: hsl(325, 15%, 30%);
+    --text-3: hsl(325, 10%, 46%);
+
+    --aurora-1: hsl(14, 80%, 89%);
+    --aurora-2: hsl(325, 45%, 91%);
+    --aurora-3: hsl(30, 70%, 91%);
+    --noise-opacity: 0.03;
+
+    --tile-tint-bg:   hsl(20 40% 96%);
+    --tile-tint-bg-2: hsl(20 35% 92%);
+    --tile-tint-edge: hsl(var(--hue) 65% 50% / 0.30);
+    --tile-tint-glow: hsl(var(--hue) 70% 55% / 0.14);
+}
+
+/* -------- Nord — arktisch, blau-grau -------- */
+[data-style="nord"][data-theme="dark"] {
+    --accent-h: 193; --accent-s: 43%; --accent-l: 67%;    /* nord8 Frost */
+    --accent-deep: hsl(213, 32%, 52%);                    /* nord10 */
+
+    --bg-0: #2e3440;
+    --bg-1: #333b49;
+    --bg-2: #3b4252;
+
+    --surface:        rgba(236, 239, 244, 0.05);
+    --surface-hover:  rgba(236, 239, 244, 0.10);
+    --surface-strong: rgba(59, 66, 82, 0.92);
+    --panel:          rgba(46, 52, 64, 0.98);
+
+    --border:        rgba(236, 239, 244, 0.09);
+    --border-strong: rgba(236, 239, 244, 0.18);
+
+    --text-1: rgba(236, 239, 244, 0.96);
+    --text-2: rgba(216, 222, 233, 0.76);
+    --text-3: rgba(216, 222, 233, 0.50);
+
+    --aurora-1: hsl(213, 32%, 25%);
+    --aurora-2: hsl(220, 16%, 22%);
+    --aurora-3: hsl(193, 30%, 22%);
+    --noise-opacity: 0.02;
+
+    --tile-tint-bg:   hsl(220 16% 26%);
+    --tile-tint-bg-2: hsl(222 16% 20%);
+    --tile-tint-edge: hsl(var(--hue) 40% 55% / 0.28);
+    --tile-tint-glow: hsl(var(--hue) 45% 60% / 0.12);
+}
+[data-style="nord"][data-theme="light"] {
+    --accent-h: 213; --accent-s: 32%; --accent-l: 48%;    /* nord10 */
+    --accent-deep: hsl(213, 40%, 38%);
+
+    --bg-0: #eceff4;
+    --bg-1: #e5e9f0;
+    --bg-2: #d8dee9;
+
+    --surface:        rgba(255, 255, 255, 0.6);
+    --surface-hover:  rgba(255, 255, 255, 0.85);
+    --surface-strong: rgba(255, 255, 255, 0.88);
+    --panel:          rgba(252, 253, 255, 0.99);
+
+    --border:        rgba(46, 52, 64, 0.10);
+    --border-strong: rgba(46, 52, 64, 0.20);
+
+    --text-1: rgba(46, 52, 64, 0.96);
+    --text-2: rgba(59, 66, 82, 0.76);
+    --text-3: rgba(67, 76, 94, 0.56);
+
+    --aurora-1: hsl(193, 43%, 83%);
+    --aurora-2: hsl(213, 40%, 86%);
+    --aurora-3: hsl(210, 35%, 89%);
+    --noise-opacity: 0.02;
+
+    --tile-tint-bg:   hsl(220 30% 94%);
+    --tile-tint-bg-2: hsl(220 25% 89%);
+    --tile-tint-edge: hsl(var(--hue) 40% 50% / 0.28);
+    --tile-tint-glow: hsl(var(--hue) 45% 55% / 0.12);
+}
+
+/* Graphit ist bewusst monochrom: Kategorie-Farbtöne neutralisieren,
+   nur der Blau-Akzent (Links, aktive Elemente) bleibt. */
+[data-style="mono"] .chip.is-active {
+    background: var(--surface-strong);
+    border-color: var(--border-strong);
+    color: var(--text-1);
+}
+[data-style="mono"] .chip:hover { border-color: var(--border-strong); }
+[data-style="mono"] .tag { background: var(--surface-hover); color: var(--text-2); }
+[data-style="mono"] .tile__badge { color: var(--text-2); }
+[data-style="mono"] .tile__body a,
+[data-style="mono"] .tile__link { color: var(--accent); }
+
+/* Der farbige Glaskanten-Verlauf (.tile::before) nutzt --hue direkt.
+   Aurora behält ihn voll; Graphit wird neutral, die getönten Stile
+   bekommen ihn gedämpft (45% statt 80% Sättigung). */
+[data-style="mono"] .tile::before {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.10) 0%, transparent 30%);
+}
+[data-style="mono"][data-theme="light"] .tile::before {
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.05) 0%, transparent 30%);
+}
+[data-style="fluent"] .tile::before,
+[data-style="nord"] .tile::before,
+[data-style="ubuntu"] .tile::before {
+    background: linear-gradient(180deg, hsl(var(--hue) 45% 72% / 0.10) 0%, transparent 30%);
+}
+[data-style="mono"] .tile:hover {
+    border-color: var(--border-strong);
+    box-shadow: 0 14px 38px -14px rgba(0, 0, 0, 0.5), 0 0 0 1px var(--border-strong);
+}
+[data-style="mono"][data-theme="light"] .tile:hover {
+    border-color: var(--border-strong);
+    box-shadow: 0 14px 38px -16px rgba(0, 0, 0, 0.22);
+}
+/* Graphit ist konsequent monochrom: auch Inhaltsfotos entsättigen und
+   deren Lesbarkeits-Verlauf (Dunkelmodus) neutral-schwarz statt getönt. */
+[data-style="mono"] .tile__cover { filter: grayscale(1); }
+/* Die getönten Stile dämpfen Inhaltsfotos, damit ihr ruhiger Charakter
+   trägt und sie sich klar vom bunten Aurora abheben. Aurora bleibt voll. */
+[data-style="fluent"] .tile__cover,
+[data-style="nord"] .tile__cover,
+[data-style="ubuntu"] .tile__cover { filter: grayscale(0.82); }
+[data-style="mono"][data-theme="dark"] .tile.has-image .tile__cover::after {
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.7) 72%, rgba(0, 0, 0, 0.88) 100%);
+}
+
 /* -------- Base -------- */
 *, *::before, *::after { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
@@ -134,12 +434,12 @@ code, kbd, .mono { font-family: var(--font-mono); }
         radial-gradient(at 80% 100%, var(--bg-2) 0%, transparent 50%),
         var(--bg-0);
 }
-[data-theme="light"] .aurora { opacity: 0.75; background-color: var(--bg-0); }
+[data-style="aurora"][data-theme="light"] .aurora { opacity: 0.75; background-color: var(--bg-0); }
 .aurora::after {
     content: "";
     position: absolute; inset: 0;
     background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .35 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='.55'/></svg>");
-    opacity: 0.05;
+    opacity: var(--noise-opacity, 0.05);
 }
 
 /* -------- Topbar (einzeilig & kompakt) -------- */
@@ -245,6 +545,54 @@ code, kbd, .mono { font-family: var(--font-mono); }
 [data-theme="light"] .iconbtn .i-moon { display: none; }
 [data-theme="light"] .iconbtn .i-sun  { display: block; }
 
+/* -------- Stil-Umschalter (Popover mit Vorschau) -------- */
+.style-picker { position: relative; display: inline-flex; flex-shrink: 0; }
+.style-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    z-index: 60;
+    min-width: 190px;
+    padding: 6px;
+    background: var(--panel);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--r-md);
+    box-shadow: 0 18px 44px -14px rgba(0, 0, 0, 0.5), 0 2px 8px -3px rgba(0, 0, 0, 0.4);
+    display: flex; flex-direction: column; gap: 2px;
+    transform-origin: top right;
+    animation: style-menu-in var(--t-fast);
+}
+@keyframes style-menu-in {
+    from { opacity: 0; transform: translateY(-4px) scale(0.97); }
+    to   { opacity: 1; transform: none; }
+}
+.style-menu[hidden] { display: none; }
+.style-opt {
+    display: flex; align-items: center; gap: 9px;
+    width: 100%;
+    padding: 7px 9px;
+    border-radius: var(--r-sm);
+    color: var(--text-2);
+    font-size: 0.8rem;
+    text-align: left;
+    transition: background var(--t-fast), color var(--t-fast);
+}
+.style-opt:hover { background: var(--surface-hover); color: var(--text-1); }
+.style-opt.is-active { color: var(--text-1); font-weight: 600; }
+.style-opt__sw {
+    width: 20px; height: 20px;
+    border-radius: 6px;
+    flex-shrink: 0;
+    border: 1px solid var(--border-strong);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+.style-opt__name { flex: 1; }
+.style-opt__check { width: 14px; height: 14px; opacity: 0; flex-shrink: 0; color: var(--accent); }
+.style-opt.is-active .style-opt__check { opacity: 1; }
+@media (prefers-reduced-motion: reduce) {
+    .style-menu { animation: none; }
+}
+
 /* Chip filter — auf breiten Screens in der Topbar-Zeile (scrollbar bei
    Enge), auf schmalen Screens eine eigene, umbrechende Zeile darunter */
 .chips {
@@ -271,11 +619,14 @@ code, kbd, .mono { font-family: var(--font-mono); }
     .topbar__tools {
         flex: 1 1 100%;
         margin-left: 0;
+        min-width: 0;
     }
     .search {
         flex: 1 1 auto;
         max-width: none;
+        min-width: 0; /* darf schrumpfen, damit Stil- + Theme-Icon + „Neu" in die Zeile passen */
     }
+    .search kbd { display: none; } /* Tastatur-Hinweis auf Touch weglassen → mehr Platz */
 }
 .chip {
     display: inline-flex; align-items: center; gap: 5px;

@@ -34,7 +34,7 @@ function asset(string $path): string {
 }
 ?>
 <!DOCTYPE html>
-<html lang="de" data-theme="dark">
+<html lang="de" data-theme="dark" data-style="aurora">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -42,6 +42,18 @@ function asset(string $path): string {
     <meta name="theme-color" content="#0a0a0f">
     <title><?= e(SITE_TITLE) ?></title>
     <link rel="icon" href="favicon.png" type="image/png">
+    <!-- Theme + Stil vor dem ersten Paint setzen (kein Aufblitzen des Defaults) -->
+    <script>
+        (function () {
+            try {
+                var el = document.documentElement;
+                var t = localStorage.getItem('cms-theme');
+                var s = localStorage.getItem('cms-style');
+                if (t === 'dark' || t === 'light') el.setAttribute('data-theme', t);
+                if (s) el.setAttribute('data-style', s);
+            } catch (e) { /* localStorage kann blockiert sein — Defaults bleiben */ }
+        })();
+    </script>
     <link rel="stylesheet" href="<?= e(asset('css/styles.css')) ?>">
 </head>
 <body>
@@ -95,6 +107,18 @@ function asset(string $path): string {
                 <input type="search" id="search" placeholder="Suchen…" autocomplete="off">
                 <kbd>/</kbd>
             </label>
+
+            <div class="style-picker">
+                <button type="button" class="iconbtn" id="style-toggle" title="Stil wählen" aria-label="Stil wählen" aria-haspopup="true" aria-expanded="false">
+                    <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                        <path d="M12 3a9 9 0 0 0 0 18c1.7 0 2-1.3 1.2-2.2-.8-.9-.5-2.3.8-2.3H17a4 4 0 0 0 4-4c0-4.4-4-7.5-9-7.5Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                        <circle cx="7.5" cy="11" r="1.1" fill="currentColor"/>
+                        <circle cx="12" cy="8" r="1.1" fill="currentColor"/>
+                        <circle cx="16" cy="11" r="1.1" fill="currentColor"/>
+                    </svg>
+                </button>
+                <div class="style-menu" id="style-menu" role="menu" aria-label="Stil wählen" hidden></div>
+            </div>
 
             <button type="button" class="iconbtn" id="theme-toggle" title="Theme wechseln" aria-label="Theme wechseln">
                 <svg class="i-sun"  viewBox="0 0 24 24" width="16" height="16"><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v2"/><path d="M12 19v2"/><path d="M3 12h2"/><path d="M19 12h2"/><path d="m5.6 5.6 1.4 1.4"/><path d="m17 17 1.4 1.4"/><path d="m5.6 18.4 1.4-1.4"/><path d="m17 7 1.4-1.4"/></g></svg>

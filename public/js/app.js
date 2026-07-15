@@ -16,6 +16,18 @@
  */
 
 const THEME_KEY = 'cms-theme';
+const STYLE_KEY = 'cms-style';
+
+// Auswählbare Stile. Jeder hat im CSS eine Tag- und Nachtvariante
+// ([data-style="…"][data-theme="…"]); swatch = zwei repräsentative
+// Farben (Fläche + Akzent) für die Vorschau im Popover.
+const STYLES = [
+    { id: 'aurora', label: 'Aurora',  swatch: ['#1a1540', '#e8833a'] },
+    { id: 'mono',   label: 'Graphit', swatch: ['#0a0a0a', '#f5f5f7'] },
+    { id: 'fluent', label: 'Fluent',  swatch: ['#202020', '#4cc2ff'] },
+    { id: 'ubuntu', label: 'Ubuntu',  swatch: ['#2c1620', '#e95420'] },
+    { id: 'nord',   label: 'Nord',    swatch: ['#2e3440', '#88c0d0'] },
+];
 
 class CMS {
     constructor() {
@@ -54,6 +66,7 @@ class CMS {
 
     init() {
         this.bindTheme();
+        this.bindStyle();
         this.bindSearch();
         this.bindFilters();
         this.bindGrid();
@@ -222,6 +235,60 @@ class CMS {
             const next = now === 'dark' ? 'light' : 'dark';
             document.documentElement.setAttribute('data-theme', next);
             localStorage.setItem(THEME_KEY, next);
+        });
+    }
+
+    // ---------- Stil-Umschalter (Popover) ----------
+    // Zweite Theming-Dimension: data-style. Die Auswahl schaltet sofort um
+    // und bleibt in localStorage; der Tag/Nacht-Schalter kehrt jeden Stil
+    // unabhängig um. Das Passwort ist hier nicht im Spiel (reine Ansicht).
+    bindStyle() {
+        const valid = new Set(STYLES.map(s => s.id));
+        let current = localStorage.getItem(STYLE_KEY) || 'aurora';
+        if (!valid.has(current)) current = 'aurora';
+        document.documentElement.setAttribute('data-style', current);
+
+        const toggle = document.getElementById('style-toggle');
+        const menu = document.getElementById('style-menu');
+        if (!toggle || !menu) return;
+
+        menu.innerHTML = STYLES.map(s => `
+            <button type="button" class="style-opt" role="menuitemradio" data-style-id="${s.id}" aria-checked="false">
+                <span class="style-opt__sw" style="background: linear-gradient(135deg, ${s.swatch[0]} 0%, ${s.swatch[0]} 48%, ${s.swatch[1]} 52%, ${s.swatch[1]} 100%)"></span>
+                <span class="style-opt__name">${s.label}</span>
+                <svg class="style-opt__check" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>`).join('');
+
+        const opts = Array.from(menu.querySelectorAll('.style-opt'));
+        const markActive = (id) => opts.forEach(o => {
+            const active = o.dataset.styleId === id;
+            o.classList.toggle('is-active', active);
+            o.setAttribute('aria-checked', active ? 'true' : 'false');
+        });
+        markActive(current);
+
+        const open = () => { menu.hidden = false; toggle.setAttribute('aria-expanded', 'true'); };
+        const close = () => { menu.hidden = true;  toggle.setAttribute('aria-expanded', 'false'); };
+
+        toggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            menu.hidden ? open() : close();
+        });
+
+        opts.forEach(o => o.addEventListener('click', () => {
+            const id = o.dataset.styleId;
+            document.documentElement.setAttribute('data-style', id);
+            localStorage.setItem(STYLE_KEY, id);
+            markActive(id);
+            close();
+        }));
+
+        // Klick außerhalb bzw. Escape schließt das Popover
+        document.addEventListener('click', (e) => {
+            if (!menu.hidden && !menu.contains(e.target) && !toggle.contains(e.target)) close();
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && !menu.hidden) close();
         });
     }
 
