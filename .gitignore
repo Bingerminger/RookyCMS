@@ -1,0 +1,26 @@
+# ============================================================
+# RookyCMS — .gitignore
+#
+# Grundprinzip: Der Code ist öffentlich, die Instanz ist privat.
+# Alles, was zu EINER konkreten Installation gehört (Passwort,
+# echte Einträge, hochgeladene Bilder, Deploy-Infrastruktur),
+# bleibt lokal und geht nie ins Repository. Demo-Inhalte liegen
+# stattdessen versioniert in demo-data/.
+# ============================================================
+
+# --- Private Instanz-Daten (NIE committen) ---
+public/config.php
+public/data/
+public/uploads/
+public/backup/
+
+# --- Private Deploy-Infrastruktur & lokale Notizen ---
+scripts/
+CLAUDE.local.md
+.claude/
+
+# --- Tooling-Artefakte (generiert) ---
+.DS_Store
+.ua/
+graphify-out/
+.playwright-mcp/
