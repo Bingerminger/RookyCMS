@@ -2,6 +2,29 @@
 
 Alle nennenswerten Änderungen an RookyCMS.
 
+## [1.1.0] — 2026-07-15
+
+### Hinzugefügt
+
+- **Stil-Auswahl** über ein Palette-Icon neben dem Tag/Nacht-Schalter: ein Popover
+  mit Farbvorschau bietet fünf visuelle Stile, jeder mit eigener Tag- und
+  Nachtansicht. Die Auswahl schaltet sofort um und bleibt gespeichert; der
+  Tag/Nacht-Schalter kehrt jeden Stil unabhängig um.
+  - **Aurora** (bisheriger Standard, bunt), **Graphit** (reines Schwarz/Weiß,
+    Apple-Stil), **Fluent** (Windows 11, Mica-Grau + Blau), **Ubuntu**
+    (Aubergine + Orange), **Nord** (arktisches Blau-Grau)
+- Zweite Theming-Dimension `data-style` neben `data-theme`; jeder Stil ist reine
+  CSS-Custom-Property-Konfiguration — das übrige CSS bleibt unberührt
+
+### Geändert
+
+- Theme **und** Stil werden vor dem ersten Paint gesetzt (kleines Inline-Script im
+  `<head>`) — kein Aufblitzen des Standard-Themes mehr beim Laden
+- Getönte Stile dämpfen Inhaltsfotos (Graphit entsättigt sie vollständig), damit
+  ihr ruhiger Charakter trägt; Aurora bleibt voll farbig
+- Auf schmalen Screens entfällt der Tastatur-Hinweis (`/`) im Suchfeld, damit
+  Stil-, Theme- und „Neu"-Button ohne horizontalen Überlauf in eine Zeile passen
+
 ## [1.0.0] — 2026-07-15
 
 Erstveröffentlichung. RookyCMS ist aus einem seit Jahren privat betriebenen
