@@ -110,6 +110,8 @@ curl -s -o /dev/null -w '%{http_code}\n' http://<host>/<pfad>/data/entries.json 
 
 **Update auf 1.2.0:** Kacheltexte, die im Browser gespeichert wurden, tragen Windows-Zeilenenden (CRLF). Bis 1.1.0 gingen dadurch Absätze verloren; ab 1.2.0 werden sie beim Anzeigen und beim nächsten Speichern vereinheitlicht — betroffene Kacheln zeigen ihre Absätze danach wie vorgesehen, ohne Zutun.
 
+**Update auf 1.3.0:** Die Stile Graphit, Fluent, Ubuntu und Nord sind durch Klar, Minze und Schiefer ersetzt; eine gespeicherte Auswahl wechselt beim ersten Aufruf von selbst auf den Nachfolger (Graphit/Fluent → Klar, Nord → Schiefer, Ubuntu → Minze). Tag/Nacht startet auf jedem Gerät einmal im Automatikmodus und folgt dann dem Gerät — wer es fest will, tippt auf Sonne/Mond. Auf dem Anzeigegerät einmal neu laden.
+
 ## Sicherung
 
 - Automatisch: `public/data/backups/` — vor Schreibvorgängen, gedrosselt (max. 1 pro 5 Minuten), Rotation auf die letzten 15.

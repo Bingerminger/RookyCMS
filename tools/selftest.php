@@ -233,6 +233,32 @@ check("VERSION ($release) = oberster CHANGELOG-Abschnitt (" . ($m[1] ?? '–') .
 check('LICENSE ist die GNU AGPL v3', str_contains((string)file_get_contents($root . '/LICENSE'), 'GNU AFFERO GENERAL PUBLIC LICENSE'));
 check('README nennt die AGPL', str_contains((string)file_get_contents($root . '/README.md'), '[GNU AGPL v3.0 oder neuer](LICENSE)'));
 check("Fußzeile verlinkt den Quellcode von v$release (AGPL §13)", str_contains($page, "https://github.com/Bingerminger/RookyCMS/tree/v$release"));
+check('Fußzeile: Kaffee-Link öffnet neuen Tab ohne Herkunft', (bool)preg_match('~<a href="https://buymeacoffee\.com/bingerminger" target="_blank" rel="noopener noreferrer"~', $page));
+check('FUNDING.yml nennt Buy Me a Coffee', str_contains((string)@file_get_contents($root . '/.github/FUNDING.yml'), 'buy_me_a_coffee: bingerminger'));
+
+// ---------------------------------------------------------------------------
+echo "Stile & Tag/Nacht\n";
+
+$js  = (string)file_get_contents($root . '/public/js/app.js');
+$css = (string)file_get_contents($root . '/public/css/styles.css');
+$php = (string)file_get_contents($root . '/public/index.php');
+preg_match('/const STYLES = \[(.*?)\];/s', $js, $mm);
+preg_match_all("/id: '([a-z]+)'/", $mm[1] ?? '', $ids);
+$styles = $ids[1];
+preg_match("/\[('aurora'[^\]]*)\]\.indexOf\(s\)/", $php, $pp);
+$prePaint = array_map(static fn($s) => trim($s, " '"), explode(',', $pp[1] ?? ''));
+check('Stil-Liste: app.js = Vor-Paint-Skript (' . implode(', ', $styles) . ')', $styles !== [] && $styles === $prePaint, implode(',', $prePaint));
+foreach (array_diff($styles, ['aurora']) as $s) {
+    check("CSS hat $s mit Tag- und Nachtansicht", str_contains($css, "[data-style=\"$s\"][data-theme=\"light\"]") && str_contains($css, "[data-style=\"$s\"][data-theme=\"dark\"]"));
+}
+preg_match('/const LEGACY_STYLES = (\{[^}]*\})/', $js, $lj);
+preg_match('/var legacy = (\{[^}]*\})/', $php, $lp);
+$norm = static fn(string $s): string => preg_replace('/\s+/', '', $s);
+check('Abbildung alter Stile: app.js = Vor-Paint-Skript', ($lj[1] ?? 'a') !== '' && $norm($lj[1] ?? 'a') === $norm($lp[1] ?? 'b'));
+preg_match_all("/: '([a-z]+)'/", $lj[1] ?? '', $targets);
+check('alte Stile zeigen auf existierende', $targets[1] !== [] && array_diff($targets[1], $styles) === []);
+check('Tag/Nacht ohne Wahl automatisch (Vor-Paint wertet prefers-color-scheme aus)', str_contains($php, "localStorage.getItem('cms-mode')") && str_contains($php, "prefers-color-scheme: light"));
+check('Aurora unverändert: keine Stil-Regel greift Aurora an', !preg_match('/\[data-style="aurora"\]\[data-theme="(light|dark)"\]\s*\{[^}]*--/s', $css));
 
 echo "\n" . ($fails === 0 ? "Alles grün: $count Prüfungen." : "$fails von $count Prüfungen rot.") . "\n";
 exit($fails === 0 ? 0 : 1);

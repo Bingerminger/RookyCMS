@@ -56,16 +56,17 @@ function asset(string $path): string {
     <meta name="generator" content="RookyCMS <?= e($release) ?>">
     <title><?= e(SITE_TITLE) ?></title>
     <link rel="icon" href="favicon.png" type="image/png">
-    <!-- Theme + Stil vor dem ersten Paint setzen (kein Aufblitzen des Defaults) -->
+    <!-- Tag/Nacht + Stil vor dem ersten Paint setzen (kein Aufblitzen des Defaults).
+         Tag/Nacht: ohne Wahl automatisch wie das Gerät; Stile wie STYLES in js/app.js. -->
     <script>
         (function () {
-            try {
-                var el = document.documentElement;
-                var t = localStorage.getItem('cms-theme');
-                var s = localStorage.getItem('cms-style');
-                if (t === 'dark' || t === 'light') el.setAttribute('data-theme', t);
-                if (s) el.setAttribute('data-style', s);
-            } catch (e) { /* localStorage kann blockiert sein — Defaults bleiben */ }
+            var el = document.documentElement, m = null, s = null;
+            try { m = localStorage.getItem('cms-mode'); s = localStorage.getItem('cms-style'); } catch (e) { /* blockiert */ }
+            var light = m === 'light' || (m !== 'dark' && !!window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches);
+            el.setAttribute('data-theme', light ? 'light' : 'dark');
+            var legacy = { mono: 'klar', fluent: 'klar', nord: 'schiefer', ubuntu: 'minze' };
+            s = legacy[s] || s;
+            if (['aurora', 'klar', 'minze', 'schiefer'].indexOf(s) >= 0) el.setAttribute('data-style', s);
         })();
     </script>
     <link rel="stylesheet" href="<?= e(asset('css/styles.css')) ?>">
@@ -134,7 +135,7 @@ function asset(string $path): string {
                 <div class="style-menu" id="style-menu" role="menu" aria-label="Stil wählen" hidden></div>
             </div>
 
-            <button type="button" class="iconbtn" id="theme-toggle" title="Theme wechseln" aria-label="Theme wechseln">
+            <button type="button" class="iconbtn" id="theme-toggle" title="Darstellung: automatisch (wie das Gerät)" aria-label="Darstellung: automatisch (wie das Gerät)">
                 <svg class="i-sun"  viewBox="0 0 24 24" width="16" height="16"><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v2"/><path d="M12 19v2"/><path d="M3 12h2"/><path d="M19 12h2"/><path d="m5.6 5.6 1.4 1.4"/><path d="m17 17 1.4 1.4"/><path d="m5.6 18.4 1.4-1.4"/><path d="m17 7 1.4-1.4"/></g></svg>
                 <svg class="i-moon" viewBox="0 0 24 24" width="16" height="16"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
             </button>
@@ -169,7 +170,8 @@ function asset(string $path): string {
 <footer class="site-foot">
     RookyCMS <?= e($release) ?> · freie Software unter
     <a href="https://www.gnu.org/licenses/agpl-3.0.html" target="_blank" rel="noopener">AGPL-3.0</a> ·
-    <a href="<?= e($sourceUrl) ?>" target="_blank" rel="noopener">Quellcode</a>
+    <a href="<?= e($sourceUrl) ?>" target="_blank" rel="noopener">Quellcode</a> ·
+    <a href="https://buymeacoffee.com/bingerminger" target="_blank" rel="noopener noreferrer" title="Ganz freiwillig — öffnet Buy Me a Coffee in einem neuen Tab">☕ Kaffee spendieren</a>
 </footer>
 
 <!-- =====================================================================

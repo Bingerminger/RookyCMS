@@ -48,9 +48,16 @@
 
     /* Körnung des Aurora-Overlays; je Stil überschrieben (0 = clean) */
     --noise-opacity: 0.05;
+
+    /* Seit 1.3.0 je Stil überschreibbar — die Werte hier sind exakt die
+       bisherigen festen Werte, Aurora sieht damit unverändert aus. */
+    --accent-fg: #0a0a0f;          /* Schrift auf dem Primärknopf */
+    --field-bg:  var(--surface);   /* Eingabefelder, Vorschau, Dropzone */
+    --scrim:     rgba(0, 0, 0, 0.72);
 }
 
 :root, [data-theme="dark"] {
+    color-scheme: dark;   /* Scrollbalken & Auswahllisten folgen der Ansicht, nicht dem System */
     --bg-0: #07070b;
     --bg-1: #0d0d14;
     --bg-2: #14141d;
@@ -80,6 +87,7 @@
 }
 
 [data-theme="light"] {
+    color-scheme: light;
     --bg-0: #f4f1ec;
     --bg-1: #ece7e0;
     --bg-2: #e0d9d0;
@@ -107,301 +115,342 @@
 }
 
 /* ============================================================
-   Weitere Stile — je Tag- und Nachtansicht.
-   Zweite Theming-Dimension: data-style auf <html>.
-   Aurora (oben) ist der Default; die folgenden Blöcke
-   überschreiben nur die Design-Tokens, das restliche CSS
-   bleibt unberührt. Reihenfolge dark→light je Stil.
+   Weitere Stile (seit 1.3.0): Klar, Minze, Schiefer.
+   Zweite Theming-Dimension: data-style auf <html>, jeder Stil mit
+   Tag- und Nachtansicht (data-theme). Aurora (oben) bleibt Default
+   und unverändert. Die drei neuen sind bewusst LEICHT — flache
+   Karten auf ruhigem Grund, feine Kante, weicher Schatten, die
+   Kategoriefarbe nur als Akzent (Badge, bei Schiefer als Randstreifen),
+   Bilder als Kopfband. Kein Glas, kein Glühen, keine Körnung.
+
+   Aufbau: zuerst die Farb-Tokens je Stil und Tageszeit, danach das
+   gemeinsame Kartenbild unter :root:not([data-style="aurora"]).
+   Kommt ein Stil dazu, der wieder wie Aurora aussehen soll, muss er
+   dort ausgenommen werden.
+
+   Wichtig: Tokens mit var(--hue) werden an der KACHEL deklariert
+   (.tile setzt --hue je Kategorie). Auf :root deklariert würden sie
+   dort aufgelöst, wo es kein --hue gibt — und wären ungültig.
    ============================================================ */
 
-/* -------- Graphit (Apple) — reines Schwarz/Weiß -------- */
-[data-style="mono"][data-theme="dark"] {
-    --accent-h: 211; --accent-s: 100%; --accent-l: 55%;   /* Apple-Blau */
+/* -------- Klar — angelehnt an Apple (macOS/iOS) -------- */
+[data-style="klar"] {
+    --r-tile: 18px;
+    --label-font: var(--font-sans);
+    --label-case: none;
+    --label-track: 0;
+}
+[data-style="klar"][data-theme="light"] {
+    --accent-h: 211; --accent-s: 100%; --accent-l: 45%;   /* #0071e3 */
+    --accent-soft: hsl(211, 100%, 45%);
+    --accent-deep: hsl(211, 100%, 38%);
+    --accent-fg: #ffffff;
+
+    --bg-0: #f5f5f7;
+    --bg-1: #f5f5f7;
+    --bg-2: #e8e8ed;
+
+    --surface:        #ffffff;
+    --surface-hover:  #ebebf0;
+    --surface-strong: #ffffff;
+    --panel:          #ffffff;
+    --field-bg:       #f5f5f7;
+    --scrim:          rgba(0, 0, 0, 0.32);
+
+    --border:        rgba(0, 0, 0, 0.08);
+    --border-strong: rgba(0, 0, 0, 0.16);
+
+    --text-1: #1d1d1f;
+    --text-2: #424245;
+    --text-3: #6e6e73;
+
+    --card:              #ffffff;
+    --card-border:       rgba(0, 0, 0, 0.05);
+    --card-shadow:       0 1px 2px rgba(0, 0, 0, 0.04), 0 3px 12px rgba(0, 0, 0, 0.04);
+    --card-shadow-hover: 0 4px 14px rgba(0, 0, 0, 0.06), 0 14px 34px rgba(0, 0, 0, 0.08);
+}
+[data-style="klar"][data-theme="dark"] {
+    --accent-h: 211; --accent-s: 100%; --accent-l: 52%;   /* #0a84ff */
+    --accent-soft: hsl(211, 100%, 66%);
+    --accent-deep: hsl(211, 100%, 46%);
+    --accent-fg: #ffffff;
 
     --bg-0: #000000;
-    --bg-1: #0a0a0a;
-    --bg-2: #151515;
+    --bg-1: #000000;
+    --bg-2: #1c1c1e;
 
-    --surface:        rgba(255, 255, 255, 0.05);
-    --surface-hover:  rgba(255, 255, 255, 0.10);
-    --surface-strong: rgba(28, 28, 30, 0.92);
-    --panel:          rgba(22, 22, 24, 0.98);
+    --surface:        #1c1c1e;
+    --surface-hover:  #2c2c2e;
+    --surface-strong: #1c1c1e;
+    --panel:          #1c1c1e;
+    --field-bg:       #2c2c2e;
+    --scrim:          rgba(0, 0, 0, 0.6);
 
-    --border:        rgba(255, 255, 255, 0.11);
-    --border-strong: rgba(255, 255, 255, 0.22);
+    --border:        rgba(255, 255, 255, 0.10);
+    --border-strong: rgba(255, 255, 255, 0.20);
 
-    --text-1: rgba(255, 255, 255, 0.96);
-    --text-2: rgba(255, 255, 255, 0.62);
-    --text-3: rgba(255, 255, 255, 0.40);
+    --text-1: #f5f5f7;
+    --text-2: #c7c7cc;
+    --text-3: #98989d;
 
-    --aurora-1: #0a0a0a;
-    --aurora-2: #050505;
-    --aurora-3: #0f0f0f;
-    --noise-opacity: 0;
-
-    --tile-tint-bg:   hsl(0 0% 11%);
-    --tile-tint-bg-2: hsl(0 0% 7%);
-    --tile-tint-edge: rgba(255, 255, 255, 0.13);
-    --tile-tint-glow: rgba(255, 255, 255, 0.05);
-}
-[data-style="mono"][data-theme="light"] {
-    --accent-h: 211; --accent-s: 100%; --accent-l: 45%;   /* Apple-Blau */
-
-    --bg-0: #ffffff;
-    --bg-1: #fbfbfd;
-    --bg-2: #f5f5f7;
-
-    --surface:        rgba(0, 0, 0, 0.025);
-    --surface-hover:  rgba(0, 0, 0, 0.05);
-    --surface-strong: rgba(255, 255, 255, 0.92);
-    --panel:          rgba(255, 255, 255, 0.99);
-
-    --border:        rgba(0, 0, 0, 0.10);
-    --border-strong: rgba(0, 0, 0, 0.17);
-
-    --text-1: rgba(29, 29, 31, 0.96);
-    --text-2: rgba(29, 29, 31, 0.62);
-    --text-3: rgba(29, 29, 31, 0.42);
-
-    --aurora-1: #f5f5f7;
-    --aurora-2: #fbfbfd;
-    --aurora-3: #f0f0f2;
-    --noise-opacity: 0;
-
-    --tile-tint-bg:   hsl(0 0% 98%);
-    --tile-tint-bg-2: hsl(0 0% 95%);
-    --tile-tint-edge: rgba(0, 0, 0, 0.09);
-    --tile-tint-glow: rgba(0, 0, 0, 0.03);
+    --card:              #1c1c1e;
+    --card-border:       rgba(255, 255, 255, 0.06);
+    --card-shadow:       none;
+    --card-shadow-hover: 0 12px 32px rgba(0, 0, 0, 0.7);
 }
 
-/* -------- Fluent (Windows 11) — Mica-Grau + Blau -------- */
-[data-style="fluent"][data-theme="dark"] {
-    --accent-h: 206; --accent-s: 100%; --accent-l: 65%;   /* Win-Blau hell */
+/* -------- Minze — frisch und rund (wie cat-o-fit) -------- */
+[data-style="minze"] {
+    --r-tile: 20px;
+    --label-font: var(--font-sans);
+    --label-case: none;
+    --label-track: 0;
+}
+[data-style="minze"][data-theme="light"] {
+    --accent-h: 163; --accent-s: 76%; --accent-l: 36%;    /* Minzgrün */
+    --accent-soft: hsl(163, 76%, 32%);
+    --accent-deep: hsl(163, 76%, 30%);
+    --accent-fg: #ffffff;
 
-    --bg-0: #1f1f1f;
-    --bg-1: #272727;
-    --bg-2: #2d2d2d;
+    --bg-0: #eef1f5;
+    --bg-1: #f6f8fb;
+    --bg-2: #e7ecf1;
 
-    --surface:        rgba(255, 255, 255, 0.05);
-    --surface-hover:  rgba(255, 255, 255, 0.09);
-    --surface-strong: rgba(43, 43, 43, 0.92);
-    --panel:          rgba(44, 44, 44, 0.98);
+    --surface:        #ffffff;
+    --surface-hover:  #f1f4f7;
+    --surface-strong: #ffffff;
+    --panel:          #ffffff;
+    --field-bg:       #f1f4f7;
+    --scrim:          rgba(20, 27, 33, 0.42);
+
+    --border:        rgba(20, 27, 33, 0.08);
+    --border-strong: rgba(20, 27, 33, 0.16);
+
+    --text-1: #161b21;
+    --text-2: #58646f;
+    --text-3: #626c78;
+
+    --card:              #ffffff;
+    --card-border:       rgba(20, 27, 33, 0.06);
+    --card-shadow:       0 1px 2px rgba(16, 24, 40, 0.05), 0 1px 3px rgba(16, 24, 40, 0.05);
+    --card-shadow-hover: 0 4px 16px rgba(16, 24, 40, 0.08), 0 12px 28px rgba(16, 24, 40, 0.06);
+}
+[data-style="minze"][data-theme="dark"] {
+    --accent-h: 163; --accent-s: 72%; --accent-l: 45%;
+    --accent-soft: hsl(163, 70%, 60%);
+    --accent-deep: hsl(163, 76%, 36%);
+    --accent-fg: #06140f;
+
+    --bg-0: #0c0f13;
+    --bg-1: #11151b;
+    --bg-2: #161b22;
+
+    --surface:        #161b22;
+    --surface-hover:  #1d242c;
+    --surface-strong: #161b22;
+    --panel:          #161b22;
+    --field-bg:       #1d242c;
+    --scrim:          rgba(0, 0, 0, 0.6);
 
     --border:        rgba(255, 255, 255, 0.08);
+    --border-strong: rgba(255, 255, 255, 0.15);
+
+    --text-1: #eef2f6;
+    --text-2: #9aa7b4;
+    --text-3: #8a96a1;
+
+    --card:              #161b22;
+    --card-border:       rgba(255, 255, 255, 0.06);
+    --card-shadow:       0 1px 2px rgba(0, 0, 0, 0.3);
+    --card-shadow-hover: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+/* -------- Schiefer — sachlich, mit Randstreifen (wie Energietracker) -------- */
+[data-style="schiefer"] {
+    --r-tile: 14px;
+    --label-font: var(--font-mono);
+    --label-case: uppercase;
+    --label-track: 0.06em;
+}
+[data-style="schiefer"][data-theme="light"] {
+    --accent-h: 221; --accent-s: 83%; --accent-l: 53%;    /* #2563eb */
+    --accent-soft: hsl(221, 83%, 45%);
+    --accent-deep: hsl(224, 76%, 48%);
+    --accent-fg: #ffffff;
+
+    --bg-0: #f6f8fa;
+    --bg-1: #ffffff;
+    --bg-2: #eef2f7;
+
+    --surface:        #ffffff;
+    --surface-hover:  #eef2f7;
+    --surface-strong: #ffffff;
+    --panel:          #ffffff;
+    --field-bg:       #eef2f7;
+    --scrim:          rgba(15, 23, 42, 0.45);
+
+    --border:        rgba(15, 23, 42, 0.08);
+    --border-strong: rgba(15, 23, 42, 0.18);
+
+    --text-1: #0f172a;
+    --text-2: #475569;
+    --text-3: #566276;
+
+    --card:              #ffffff;
+    --card-border:       rgba(15, 23, 42, 0.08);
+    --card-shadow:       0 1px 2px rgba(15, 23, 42, 0.06);
+    --card-shadow-hover: 0 4px 16px rgba(15, 23, 42, 0.10);
+}
+[data-style="schiefer"][data-theme="dark"] {
+    --accent-h: 212; --accent-s: 72%; --accent-l: 59%;    /* #4a90e2 */
+    --accent-soft: hsl(212, 72%, 70%);
+    --accent-deep: hsl(212, 65%, 50%);
+    --accent-fg: #0a0d12;
+
+    --bg-0: #080c12;
+    --bg-1: #111827;
+    --bg-2: #1c2636;
+
+    --surface:        #111827;
+    --surface-hover:  #1c2636;
+    --surface-strong: #111827;
+    --panel:          #111827;
+    --field-bg:       #1c2636;
+    --scrim:          rgba(8, 11, 16, 0.85);
+
+    --border:        rgba(255, 255, 255, 0.07);
     --border-strong: rgba(255, 255, 255, 0.16);
 
-    --text-1: rgba(255, 255, 255, 0.95);
-    --text-2: rgba(255, 255, 255, 0.72);
-    --text-3: rgba(255, 255, 255, 0.50);
+    --text-1: #dce8f5;
+    --text-2: #8ba0ba;
+    --text-3: #8590a6;
 
-    --aurora-1: hsl(210, 20%, 18%);
-    --aurora-2: hsl(230, 15%, 15%);
-    --aurora-3: hsl(200, 18%, 16%);
-    --noise-opacity: 0.025;
-
-    --tile-tint-bg:   hsl(210 8% 20%);
-    --tile-tint-bg-2: hsl(210 8% 15%);
-    --tile-tint-edge: hsl(var(--hue) 45% 55% / 0.28);
-    --tile-tint-glow: hsl(var(--hue) 55% 55% / 0.12);
-}
-[data-style="fluent"][data-theme="light"] {
-    --accent-h: 206; --accent-s: 100%; --accent-l: 42%;   /* Win-Blau */
-
-    --bg-0: #f3f3f3;
-    --bg-1: #fafafa;
-    --bg-2: #ededed;
-
-    --surface:        rgba(255, 255, 255, 0.7);
-    --surface-hover:  rgba(255, 255, 255, 0.92);
-    --surface-strong: rgba(251, 251, 251, 0.92);
-    --panel:          rgba(251, 251, 251, 0.99);
-
-    --border:        rgba(0, 0, 0, 0.07);
-    --border-strong: rgba(0, 0, 0, 0.14);
-
-    --text-1: rgba(0, 0, 0, 0.90);
-    --text-2: rgba(0, 0, 0, 0.60);
-    --text-3: rgba(0, 0, 0, 0.42);
-
-    --aurora-1: hsl(210, 40%, 92%);
-    --aurora-2: hsl(230, 35%, 93%);
-    --aurora-3: hsl(200, 40%, 94%);
-    --noise-opacity: 0.02;
-
-    --tile-tint-bg:   hsl(210 20% 97%);
-    --tile-tint-bg-2: hsl(210 15% 93%);
-    --tile-tint-edge: hsl(var(--hue) 50% 55% / 0.30);
-    --tile-tint-glow: hsl(var(--hue) 55% 55% / 0.12);
+    --card:              #111827;
+    --card-border:       rgba(255, 255, 255, 0.07);
+    --card-shadow:       0 1px 2px rgba(0, 0, 0, 0.4);
+    --card-shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.35);
 }
 
-/* -------- Ubuntu (Linux) — Aubergine + Orange -------- */
-[data-style="ubuntu"][data-theme="dark"] {
-    --accent-h: 14; --accent-s: 82%; --accent-l: 55%;     /* Ubuntu-Orange */
+/* -------- Gemeinsames Kartenbild der leichten Stile -------- */
+:root:not([data-style="aurora"]) .aurora { background: var(--bg-0); }
+:root:not([data-style="aurora"]) .aurora::after { content: none; }
 
-    --bg-0: hsl(325, 20%, 9%);
-    --bg-1: hsl(325, 18%, 12%);
-    --bg-2: hsl(325, 16%, 16%);
-
-    --surface:        rgba(255, 255, 255, 0.05);
-    --surface-hover:  rgba(255, 255, 255, 0.09);
-    --surface-strong: hsl(325 15% 15% / 0.92);
-    --panel:          hsl(325 17% 12% / 0.98);
-
-    --border:        rgba(255, 255, 255, 0.09);
-    --border-strong: rgba(255, 255, 255, 0.18);
-
-    --text-1: rgba(255, 255, 255, 0.95);
-    --text-2: rgba(255, 255, 255, 0.74);
-    --text-3: rgba(255, 255, 255, 0.50);
-
-    --aurora-1: hsl(325, 40%, 18%);
-    --aurora-2: hsl(14, 50%, 16%);
-    --aurora-3: hsl(300, 35%, 14%);
-    --noise-opacity: 0.04;
-
-    --tile-tint-bg:   hsl(325 15% 18%);
-    --tile-tint-bg-2: hsl(325 14% 13%);
-    --tile-tint-edge: hsl(var(--hue) 60% 55% / 0.28);
-    --tile-tint-glow: hsl(var(--hue) 65% 55% / 0.13);
-}
-[data-style="ubuntu"][data-theme="light"] {
-    --accent-h: 14; --accent-s: 78%; --accent-l: 50%;     /* Ubuntu-Orange */
-
-    --bg-0: #faf8f7;
-    --bg-1: #f4efed;
-    --bg-2: #ebe3e0;
-
-    --surface:        rgba(255, 255, 255, 0.7);
-    --surface-hover:  rgba(255, 255, 255, 0.9);
-    --surface-strong: rgba(255, 255, 255, 0.92);
-    --panel:          rgba(253, 251, 250, 0.99);
-
-    --border:        hsl(325 30% 20% / 0.09);
-    --border-strong: hsl(325 30% 20% / 0.18);
-
-    --text-1: hsl(325, 25%, 15%);
-    --text-2: hsl(325, 15%, 30%);
-    --text-3: hsl(325, 10%, 46%);
-
-    --aurora-1: hsl(14, 80%, 89%);
-    --aurora-2: hsl(325, 45%, 91%);
-    --aurora-3: hsl(30, 70%, 91%);
-    --noise-opacity: 0.03;
-
-    --tile-tint-bg:   hsl(20 40% 96%);
-    --tile-tint-bg-2: hsl(20 35% 92%);
-    --tile-tint-edge: hsl(var(--hue) 65% 50% / 0.30);
-    --tile-tint-glow: hsl(var(--hue) 70% 55% / 0.14);
+:root:not([data-style="aurora"]) .topbar {
+    background: color-mix(in oklab, var(--bg-0) 94%, transparent);
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 10px;
 }
 
-/* -------- Nord — arktisch, blau-grau -------- */
-[data-style="nord"][data-theme="dark"] {
-    --accent-h: 193; --accent-s: 43%; --accent-l: 67%;    /* nord8 Frost */
-    --accent-deep: hsl(213, 32%, 52%);                    /* nord10 */
-
-    --bg-0: #2e3440;
-    --bg-1: #333b49;
-    --bg-2: #3b4252;
-
-    --surface:        rgba(236, 239, 244, 0.05);
-    --surface-hover:  rgba(236, 239, 244, 0.10);
-    --surface-strong: rgba(59, 66, 82, 0.92);
-    --panel:          rgba(46, 52, 64, 0.98);
-
-    --border:        rgba(236, 239, 244, 0.09);
-    --border-strong: rgba(236, 239, 244, 0.18);
-
-    --text-1: rgba(236, 239, 244, 0.96);
-    --text-2: rgba(216, 222, 233, 0.76);
-    --text-3: rgba(216, 222, 233, 0.50);
-
-    --aurora-1: hsl(213, 32%, 25%);
-    --aurora-2: hsl(220, 16%, 22%);
-    --aurora-3: hsl(193, 30%, 22%);
-    --noise-opacity: 0.02;
-
-    --tile-tint-bg:   hsl(220 16% 26%);
-    --tile-tint-bg-2: hsl(222 16% 20%);
-    --tile-tint-edge: hsl(var(--hue) 40% 55% / 0.28);
-    --tile-tint-glow: hsl(var(--hue) 45% 60% / 0.12);
+/* Kategorie-Akzente: an der Kachel deklariert, damit --hue greift */
+:root:not([data-style="aurora"]) .tile {
+    --badge-fg:   hsl(var(--hue) 65% 32%);
+    --badge-bg:   hsl(var(--hue) 75% 50% / 0.10);
+    --badge-dot:  hsl(var(--hue) 70% 46%);
+    --tile-link:  var(--accent-soft);
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: var(--r-tile);
+    box-shadow: var(--card-shadow);
 }
-[data-style="nord"][data-theme="light"] {
-    --accent-h: 213; --accent-s: 32%; --accent-l: 48%;    /* nord10 */
-    --accent-deep: hsl(213, 40%, 38%);
-
-    --bg-0: #eceff4;
-    --bg-1: #e5e9f0;
-    --bg-2: #d8dee9;
-
-    --surface:        rgba(255, 255, 255, 0.6);
-    --surface-hover:  rgba(255, 255, 255, 0.85);
-    --surface-strong: rgba(255, 255, 255, 0.88);
-    --panel:          rgba(252, 253, 255, 0.99);
-
-    --border:        rgba(46, 52, 64, 0.10);
-    --border-strong: rgba(46, 52, 64, 0.20);
-
-    --text-1: rgba(46, 52, 64, 0.96);
-    --text-2: rgba(59, 66, 82, 0.76);
-    --text-3: rgba(67, 76, 94, 0.56);
-
-    --aurora-1: hsl(193, 43%, 83%);
-    --aurora-2: hsl(213, 40%, 86%);
-    --aurora-3: hsl(210, 35%, 89%);
-    --noise-opacity: 0.02;
-
-    --tile-tint-bg:   hsl(220 30% 94%);
-    --tile-tint-bg-2: hsl(220 25% 89%);
-    --tile-tint-edge: hsl(var(--hue) 40% 50% / 0.28);
-    --tile-tint-glow: hsl(var(--hue) 45% 55% / 0.12);
+:root:not([data-style="aurora"])[data-theme="dark"] .tile {
+    --badge-fg:   hsl(var(--hue) 75% 74%);
+    --badge-bg:   hsl(var(--hue) 70% 60% / 0.16);
+    --badge-dot:  hsl(var(--hue) 75% 62%);
 }
-
-/* Graphit ist bewusst monochrom: Kategorie-Farbtöne neutralisieren,
-   nur der Blau-Akzent (Links, aktive Elemente) bleibt. */
-[data-style="mono"] .chip.is-active {
-    background: var(--surface-strong);
+:root:not([data-style="aurora"]) .tile::before,
+:root:not([data-style="aurora"]) .tile::after { content: none; }
+:root:not([data-style="aurora"]) .tile:hover {
+    transform: translateY(-2px);
     border-color: var(--border-strong);
-    color: var(--text-1);
+    box-shadow: var(--card-shadow-hover);
 }
-[data-style="mono"] .chip:hover { border-color: var(--border-strong); }
-[data-style="mono"] .tag { background: var(--surface-hover); color: var(--text-2); }
-[data-style="mono"] .tile__badge { color: var(--text-2); }
-[data-style="mono"] .tile__body a,
-[data-style="mono"] .tile__link { color: var(--accent); }
+:root:not([data-style="aurora"]) .tile.drag-over { box-shadow: var(--card-shadow), inset 0 0 0 2px var(--accent); }
 
-/* Der farbige Glaskanten-Verlauf (.tile::before) nutzt --hue direkt.
-   Aurora behält ihn voll; Graphit wird neutral, die getönten Stile
-   bekommen ihn gedämpft (45% statt 80% Sättigung). */
-[data-style="mono"] .tile::before {
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.10) 0%, transparent 30%);
+/* Schiefer: Kategorie als Randstreifen links (wie die Hinweiskarten im Energietracker).
+   :root davor, damit die Regel die gemeinsame border-Kurzform oben schlägt. */
+:root[data-style="schiefer"] .tile { border-left: 3px solid var(--badge-dot); }
+
+/* Minze: wie cat-o-fit randlose Karten, nur Schatten, kräftige Titel */
+:root[data-style="minze"] .tile { border-color: transparent; }
+:root[data-style="minze"][data-theme="dark"] .tile { border-color: var(--card-border); }
+:root[data-style="minze"] .tile__title { font-weight: 800; letter-spacing: -0.01em; }
+
+/* Bild als Kopfband statt Hintergrund — volle Farbe, kein Schleier */
+:root:not([data-style="aurora"]) .tile__cover {
+    position: relative;
+    inset: auto;
+    flex-shrink: 0;
+    height: 112px;
+    margin: -12px -14px 2px;
+    opacity: 1;
+    filter: none;
+    border-bottom: 1px solid var(--card-border);
 }
-[data-style="mono"][data-theme="light"] .tile::before {
-    background: linear-gradient(180deg, rgba(0, 0, 0, 0.05) 0%, transparent 30%);
+:root:not([data-style="aurora"]) .tile.has-image .tile__cover::after { content: none; }
+
+:root:not([data-style="aurora"]) .tile__badge {
+    font-family: var(--label-font);
+    text-transform: var(--label-case);
+    letter-spacing: var(--label-track);
+    font-size: 0.66rem;
+    font-weight: 600;
+    color: var(--badge-fg);
+    background: var(--badge-bg);
+    border-color: transparent;
 }
-[data-style="fluent"] .tile::before,
-[data-style="nord"] .tile::before,
-[data-style="ubuntu"] .tile::before {
-    background: linear-gradient(180deg, hsl(var(--hue) 45% 72% / 0.10) 0%, transparent 30%);
+:root:not([data-style="aurora"]) .tile__badge .dot { background: var(--badge-dot); }
+:root:not([data-style="aurora"]) .tag {
+    font-family: var(--label-font);
+    background: var(--field-bg);
+    border-color: transparent;
+    color: var(--text-3);
 }
-[data-style="mono"] .tile:hover {
-    border-color: var(--border-strong);
-    box-shadow: 0 14px 38px -14px rgba(0, 0, 0, 0.5), 0 0 0 1px var(--border-strong);
+:root:not([data-style="aurora"]) .tile__star { color: var(--accent); }
+:root:not([data-style="aurora"]) .tile__body { color: var(--text-2); }
+:root:not([data-style="aurora"]) .tile__body a {
+    color: var(--tile-link);
+    border-bottom-color: color-mix(in srgb, var(--tile-link) 35%, transparent);
 }
-[data-style="mono"][data-theme="light"] .tile:hover {
-    border-color: var(--border-strong);
-    box-shadow: 0 14px 38px -16px rgba(0, 0, 0, 0.22);
+:root:not([data-style="aurora"]) .tile__body code { background: var(--field-bg); }
+:root:not([data-style="aurora"]) .tile__foot { border-top-color: var(--border); }
+:root:not([data-style="aurora"]) .tile__link {
+    font-family: var(--label-font);
+    text-transform: var(--label-case);
+    letter-spacing: var(--label-track);
+    color: var(--tile-link);
 }
-/* Graphit ist konsequent monochrom: auch Inhaltsfotos entsättigen und
-   deren Lesbarkeits-Verlauf (Dunkelmodus) neutral-schwarz statt getönt. */
-[data-style="mono"] .tile__cover { filter: grayscale(1); }
-/* Die getönten Stile dämpfen Inhaltsfotos, damit ihr ruhiger Charakter
-   trägt und sie sich klar vom bunten Aurora abheben. Aurora bleibt voll. */
-[data-style="fluent"] .tile__cover,
-[data-style="nord"] .tile__cover,
-[data-style="ubuntu"] .tile__cover { filter: grayscale(0.82); }
-[data-style="mono"][data-theme="dark"] .tile.has-image .tile__cover::after {
-    background: linear-gradient(180deg, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.7) 72%, rgba(0, 0, 0, 0.88) 100%);
+:root:not([data-style="aurora"]) .tile__link:hover { color: var(--accent-deep); }
+:root:not([data-style="aurora"]) .tile__date { font-family: var(--label-font); }
+:root:not([data-style="aurora"]) .iconbtn--ghost:hover { background: var(--field-bg); }
+
+/* Bedienelemente: schlicht, Akzent statt Verlauf */
+:root:not([data-style="aurora"]) .btn--primary {
+    background: var(--accent);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
 }
+:root:not([data-style="aurora"]) .btn--primary:hover { background: var(--accent-deep); }
+:root:not([data-style="aurora"]) .chip {
+    --chip-fg: hsl(var(--hue) 65% 32%);
+    --chip-bg: hsl(var(--hue) 75% 50% / 0.12);
+}
+:root:not([data-style="aurora"])[data-theme="dark"] .chip {
+    --chip-fg: hsl(var(--hue) 75% 74%);
+    --chip-bg: hsl(var(--hue) 70% 60% / 0.18);
+}
+/* „Alle" trägt keine Kategorie — dort gilt der Akzent des Stils */
+:root:not([data-style="aurora"]) .chip[data-category="all"] {
+    --chip-fg: var(--accent-soft);
+    --chip-bg: hsl(var(--accent-h) var(--accent-s) var(--accent-l) / 0.12);
+}
+:root:not([data-style="aurora"]) .chip:hover { border-color: var(--border-strong); }
+:root:not([data-style="aurora"]) .chip.is-active {
+    background: var(--chip-bg);
+    border-color: transparent;
+    color: var(--chip-fg);
+}
+:root:not([data-style="aurora"]) .chip.is-active .chip__count { background: var(--chip-bg); }
+:root:not([data-style="aurora"]) .modal__panel { box-shadow: 0 24px 60px -18px rgba(0, 0, 0, 0.35); }
+:root:not([data-style="aurora"]) .empty { background: var(--card); box-shadow: var(--card-shadow); }
 
 /* -------- Base -------- */
 *, *::before, *::after { box-sizing: border-box; }
@@ -505,7 +554,7 @@ code, kbd, .mono { font-family: var(--font-mono); }
 .btn--sm  { padding: 5px 11px; font-size: 0.8rem; }
 .btn--primary {
     background: linear-gradient(135deg, var(--accent) 0%, var(--accent-deep) 100%);
-    color: #0a0a0f;
+    color: var(--accent-fg);
     box-shadow: 0 4px 16px -6px hsl(var(--accent-h) var(--accent-s) var(--accent-l) / 0.5);
 }
 .btn--primary:hover { transform: translateY(-1px); }
@@ -544,6 +593,20 @@ code, kbd, .mono { font-family: var(--font-mono); }
 .iconbtn .i-sun  { display: none; }
 [data-theme="light"] .iconbtn .i-moon { display: none; }
 [data-theme="light"] .iconbtn .i-sun  { display: block; }
+
+/* Tag/Nacht-Knopf: Symbol = was gerade gilt, „A" = folgt dem Gerät */
+#theme-toggle { position: relative; }
+.theme-badge {
+    position: absolute; right: -4px; bottom: -4px;
+    min-width: 14px; height: 14px; padding: 0 3px;
+    border-radius: 99px;
+    background: var(--accent);
+    color: var(--accent-fg);
+    font: 700 0.56rem/14px var(--font-sans);
+    text-align: center;
+    pointer-events: none;
+}
+.theme-badge[hidden] { display: none; }
 
 /* -------- Stil-Umschalter (Popover mit Vorschau) -------- */
 .style-picker { position: relative; display: inline-flex; flex-shrink: 0; }
@@ -997,7 +1060,7 @@ code, kbd, .mono { font-family: var(--font-mono); }
     font-size: 0.7rem;
     color: var(--text-3);
 }
-.site-foot a { text-decoration: underline; text-underline-offset: 2px; }
+.site-foot a { text-decoration: underline; text-underline-offset: 2px; white-space: nowrap; }
 .site-foot a:hover { color: var(--text-1); }
 
 /* Suche/Filter ohne Treffer */
@@ -1037,7 +1100,7 @@ code, kbd, .mono { font-family: var(--font-mono); }
     animation: modal-in var(--t-med);
 }
 .modal[hidden] { display: none; }
-.modal__backdrop { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.72); }
+.modal__backdrop { position: absolute; inset: 0; background: var(--scrim); }
 .modal__panel {
     position: relative;
     width: min(620px, 100%);
@@ -1110,7 +1173,7 @@ code, kbd, .mono { font-family: var(--font-mono); }
     width: 100%;
     padding: 10px 13px;
     border-radius: var(--r-md);
-    background: var(--surface);
+    background: var(--field-bg);
     border: 1px solid var(--border);
     color: var(--text-1);
     transition: border-color var(--t-fast), background var(--t-fast);
@@ -1140,7 +1203,7 @@ code, kbd, .mono { font-family: var(--font-mono); }
 .md-editor__preview {
     padding: 13px;
     border-radius: var(--r-md);
-    background: var(--surface);
+    background: var(--field-bg);
     border: 1px solid var(--border);
     font-size: 0.875rem; line-height: 1.55;
     color: var(--text-1);
@@ -1164,7 +1227,7 @@ code, kbd, .mono { font-family: var(--font-mono); }
     padding: 18px;
     border-radius: var(--r-md);
     border: 2px dashed var(--border-strong);
-    background: var(--surface);
+    background: var(--field-bg);
     transition: border-color var(--t-fast), background var(--t-fast);
     text-align: center; cursor: pointer;
 }

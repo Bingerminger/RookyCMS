@@ -15,7 +15,14 @@
  * - Leises Polling: nur bei geänderter Version wird neu gerendert.
  */
 
-const THEME_KEY = 'cms-theme';
+// Tag/Nacht seit 1.3.0 in drei Stufen wie im Energietracker: automatisch
+// (Standard, folgt dem Gerät — abends dunkel, morgens hell), immer hell,
+// immer dunkel. Neuer Schlüssel, damit jedes Gerät nach dem Update auf
+// „automatisch" startet; der alte (nur hell/dunkel) wird entfernt.
+const THEME_KEY = 'cms-mode';
+const LEGACY_THEME_KEY = 'cms-theme';
+const MODES = ['system', 'light', 'dark'];
+const MODE_LABEL = { system: 'automatisch (wie das Gerät)', light: 'immer hell', dark: 'immer dunkel' };
 const STYLE_KEY = 'cms-style';
 
 // localStorage kann blockiert sein (Safari privat, gesperrte Website-Daten)
@@ -24,6 +31,7 @@ const STYLE_KEY = 'cms-style';
 const store = {
     get(key) { try { return localStorage.getItem(key); } catch { return null; } },
     set(key, value) { try { localStorage.setItem(key, value); } catch { /* nur für diese Sitzung */ } },
+    remove(key) { try { localStorage.removeItem(key); } catch { /* egal */ } },
 };
 
 // Öffentliche Demo (GitHub Pages, kein PHP): tools/build-demo.sh rendert
@@ -37,14 +45,16 @@ const DEMO_MSG = 'In der Demo wird nichts gespeichert — RookyCMS selbst instal
 
 // Auswählbare Stile. Jeder hat im CSS eine Tag- und Nachtvariante
 // ([data-style="…"][data-theme="…"]); swatch = zwei repräsentative
-// Farben (Fläche + Akzent) für die Vorschau im Popover.
+// Farben (Fläche + Akzent) für die Vorschau im Popover. Dieselbe Liste
+// steht im Vor-Paint-Skript in index.php (tools/selftest.php prüft beides).
 const STYLES = [
-    { id: 'aurora', label: 'Aurora',  swatch: ['#1a1540', '#e8833a'] },
-    { id: 'mono',   label: 'Graphit', swatch: ['#0a0a0a', '#f5f5f7'] },
-    { id: 'fluent', label: 'Fluent',  swatch: ['#202020', '#4cc2ff'] },
-    { id: 'ubuntu', label: 'Ubuntu',  swatch: ['#2c1620', '#e95420'] },
-    { id: 'nord',   label: 'Nord',    swatch: ['#2e3440', '#88c0d0'] },
+    { id: 'aurora',   label: 'Aurora',   swatch: ['#1a1540', '#e8833a'] },
+    { id: 'klar',     label: 'Klar',     swatch: ['#f5f5f7', '#0071e3'] },
+    { id: 'minze',    label: 'Minze',    swatch: ['#eef1f5', '#18b48a'] },
+    { id: 'schiefer', label: 'Schiefer', swatch: ['#f6f8fa', '#2563eb'] },
 ];
+// Stile bis 1.2 → ihre Nachfolger (gespeicherte Auswahl bleibt sinnvoll)
+const LEGACY_STYLES = { mono: 'klar', fluent: 'klar', nord: 'schiefer', ubuntu: 'minze' };
 
 class CMS {
     constructor() {
@@ -238,12 +248,20 @@ class CMS {
         const GAP = 12; // muss zu --gap im CSS passen
         const tiles = [...this.grid.children];
         if (!tiles.length) return;
-        // Batch: erst alle zurücksetzen, dann alle messen, dann alle setzen
-        tiles.forEach(t => { t.style.gridRowEnd = 'auto'; });
-        const heights = tiles.map(t => t.getBoundingClientRect().height);
-        tiles.forEach((t, i) => {
-            t.style.gridRowEnd = 'span ' + Math.max(1, Math.ceil((heights[i] + GAP) / ROW_UNIT));
-        });
+        // Das Grid streckt die Kacheln nicht (align-items: start): Ihre Höhe
+        // ist auch mit gesetztem Span die Inhaltshöhe, Zurücksetzen ist
+        // unnötig. Bis 1.2 wurde vorher alles auf „auto" gesetzt — das Grid
+        // fiel kurz zusammen, der Scrollbalken verschwand, die Kacheln wurden
+        // breiter und zu niedrig gemessen und ragten danach ineinander.
+        // Kommt oder geht der Scrollbalken durchs Setzen, wird einmal nachgemessen.
+        for (let pass = 0; pass < 2; pass++) {
+            const width = this.grid.clientWidth;
+            const heights = tiles.map(t => t.getBoundingClientRect().height);
+            tiles.forEach((t, i) => {
+                t.style.gridRowEnd = 'span ' + Math.max(1, Math.ceil((heights[i] + GAP) / ROW_UNIT));
+            });
+            if (this.grid.clientWidth === width) break;
+        }
     }
 
     updateCategoryCounts() {
@@ -257,15 +275,53 @@ class CMS {
     }
 
     // ---------- Theme ----------
+    /**
+     * Tag/Nacht: Der Knopf schaltet automatisch → hell → dunkel. Das Symbol
+     * zeigt, was gerade gilt (Sonne/Mond), das „A" am Knopf die Automatik;
+     * jeder Klick meldet kurz den neuen Modus — der Schritt auf
+     * „automatisch" ändert oft nichts Sichtbares. Im Automatikmodus folgt
+     * die Ansicht dem Gerät auch während sie offen ist (Wand-Tablet abends).
+     */
     bindTheme() {
-        const saved = store.get(THEME_KEY);
-        document.documentElement.setAttribute('data-theme', saved === 'light' ? 'light' : 'dark');
-        document.getElementById('theme-toggle').addEventListener('click', () => {
-            const now = document.documentElement.getAttribute('data-theme');
-            const next = now === 'dark' ? 'light' : 'dark';
-            document.documentElement.setAttribute('data-theme', next);
-            store.set(THEME_KEY, next);
+        store.remove(LEGACY_THEME_KEY);
+        const btn = document.getElementById('theme-toggle');
+        const badge = document.createElement('span');
+        badge.className = 'theme-badge';
+        badge.textContent = 'A';
+        badge.setAttribute('aria-hidden', 'true');
+        btn.appendChild(badge);
+
+        const mq = window.matchMedia ? window.matchMedia('(prefers-color-scheme: light)') : null;
+        const mode = () => { const m = store.get(THEME_KEY); return m === 'light' || m === 'dark' ? m : 'system'; };
+        const apply = () => {
+            const m = mode();
+            const theme = m === 'system' ? (mq?.matches ? 'light' : 'dark') : m;
+            document.documentElement.setAttribute('data-theme', theme);
+            badge.hidden = m !== 'system';
+            const label = `Darstellung: ${MODE_LABEL[m]}`;
+            btn.title = label;
+            btn.setAttribute('aria-label', label);
+            this.syncBrowserColors();
+        };
+        let notice = null;
+        btn.addEventListener('click', () => {
+            const next = MODES[(MODES.indexOf(mode()) + 1) % MODES.length];
+            if (next === 'system') store.remove(THEME_KEY); else store.set(THEME_KEY, next);
+            apply();
+            notice?.remove();
+            notice = this.toast(`Darstellung: ${MODE_LABEL[next]}`, 'info', 2500);
         });
+        const onSystemChange = () => { if (mode() === 'system') apply(); };
+        if (mq?.addEventListener) mq.addEventListener('change', onSystemChange);
+        else mq?.addListener?.(onSystemChange); // Safari < 14
+        apply();
+    }
+
+    /** Statusleiste (theme-color) und Browser-Steuerelemente passend zu Stil + Tag/Nacht. */
+    syncBrowserColors() {
+        const root = document.documentElement;
+        const bg = getComputedStyle(root).getPropertyValue('--bg-0').trim();
+        if (bg) document.querySelector('meta[name="theme-color"]')?.setAttribute('content', bg);
     }
 
     // ---------- Stil-Umschalter (Popover) ----------
@@ -275,8 +331,13 @@ class CMS {
     bindStyle() {
         const valid = new Set(STYLES.map(s => s.id));
         let current = store.get(STYLE_KEY) || 'aurora';
+        if (LEGACY_STYLES[current]) {
+            current = LEGACY_STYLES[current];
+            store.set(STYLE_KEY, current);
+        }
         if (!valid.has(current)) current = 'aurora';
         document.documentElement.setAttribute('data-style', current);
+        this.syncBrowserColors();
 
         const toggle = document.getElementById('style-toggle');
         const menu = document.getElementById('style-menu');
@@ -311,6 +372,9 @@ class CMS {
             store.set(STYLE_KEY, id);
             markActive(id);
             close();
+            // Stile ändern Kachelhöhen (Bild als Kopfband, Schriften) → neu messen
+            this.layoutTiles();
+            this.syncBrowserColors();
         }));
 
         // Klick außerhalb bzw. Escape schließt das Popover
@@ -897,6 +961,7 @@ class CMS {
             t.classList.add('is-leaving');
             setTimeout(() => t.remove(), 300);
         }, ttl);
+        return t;
     }
 }
 

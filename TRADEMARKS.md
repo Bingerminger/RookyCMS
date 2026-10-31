@@ -7,10 +7,9 @@ durch die jeweiligen Inhaber.
 
 | Name | Inhaber (im Wesentlichen) | genannt für |
 |---|---|---|
-| **Apple**, **macOS**, **iOS**, **iPad**, **iPhone**, **Safari** | Apple Inc. | Vorbild des Stils Graphit, Nutzung auf Tablets und Smartphones |
-| **Microsoft**, **Windows**, **Fluent** | Microsoft Corporation | Vorbild und Name des Stils Fluent |
-| **Ubuntu** | Canonical Ltd. | Vorbild und Name des Stils Ubuntu |
-| **Nord** | Arctic Ice Studio & Sven Greb | Vorbild und Name des Stils Nord |
+| **Apple**, **macOS**, **iOS**, **iPad**, **iPhone**, **Safari** | Apple Inc. | Vorbild des Stils Klar, Nutzung auf Tablets und Smartphones |
+| **Windows** | Microsoft Corporation | Hinweis zu Zeilenenden (CRLF) im Changelog |
+| **Buy Me a Coffee** | Buy Me a Coffee, Inc. | freiwillige Unterstützung (Link in Fußzeile und README) |
 | **Synology**, **Web Station** | Synology Inc. | Installation auf einem NAS |
 | **Apache** | The Apache Software Foundation | Webserver-Einrichtung |
 | **nginx** | F5, Inc. | Webserver-Einrichtung |

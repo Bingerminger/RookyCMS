@@ -2,6 +2,49 @@
 
 Alle nennenswerten Änderungen an RookyCMS.
 
+## [1.3.0] — 2026-10-31
+
+Neue leichte Stile und Tag/Nacht von selbst. Aurora bleibt, wie es ist;
+dazu kommen drei zeitgemäße, flache Stile, und die Tageszeit-Ansicht folgt
+jetzt automatisch dem Gerät.
+
+### Hinzugefügt
+
+- **Drei leichte Stile**, jeder mit Tag- und Nachtansicht: **Klar**
+  (ruhiges Grau, weiße Karten, Systemblau — angelehnt an Apple), **Minze**
+  (frisch, rund, randlose Karten — wie cat-o-fit) und **Schiefer**
+  (sachlich, Kategorie als Randstreifen, Beschriftung in Mono — wie der
+  Energietracker). Flache Karten mit feiner Kante und weichem Schatten, die
+  Kategoriefarbe steckt im Badge, Kachelbilder erscheinen als Kopfband in
+  voller Farbe. Weiterhin ohne Blur und ohne Dauer-Animation.
+- **Tag/Nacht automatisch:** Ohne eigene Wahl folgt das Dashboard dem
+  Hell/Dunkel-Modus des Geräts — auch während es offen ist, etwa wenn das
+  Wand-Tablet abends umschaltet. Der Sonne/Mond-Knopf schaltet wie im
+  Energietracker reihum: automatisch (kleines „A" am Knopf) → immer hell →
+  immer dunkel; jeder Klick meldet kurz, was jetzt gilt. Die Statusleiste
+  (`theme-color`) und Scrollbalken passen sich mit an.
+- **Unterstützen:** freiwilliger „☕ Kaffee spendieren"-Link in der Fußzeile,
+  dazu Badge und Abschnitt in der README und der Sponsor-Knopf auf GitHub
+  (`.github/FUNDING.yml`) — wie im Energietracker.
+- Selbsttest prüft, dass Stil-Liste, Vor-Paint-Skript und CSS
+  zusammenpassen.
+
+### Geändert
+
+- **Graphit, Fluent, Ubuntu und Nord entfallen.** Eine gespeicherte Auswahl
+  wird übernommen: Graphit und Fluent werden zu Klar, Nord zu Schiefer,
+  Ubuntu zu Minze. Nach dem Update startet jedes Gerät einmal im
+  Automatikmodus für Tag/Nacht.
+- Galerie in der README mit allen Stilen in Tag- und Nachtansicht.
+
+### Behoben
+
+- **Kacheln konnten sich um einige Pixel überlappen**, wenn der Browser
+  feste Scrollbalken zeigt (Desktop): Das Masonry-Layout maß die Kacheln,
+  während der Scrollbalken kurz verschwunden war. Jetzt wird ohne
+  Zurücksetzen gemessen und bei geänderter Breite nachgemessen; nach einem
+  Stilwechsel wird neu ausgerichtet.
+
 ## [1.2.1] — 2026-10-31
 
 Live-Demo, AGPL-Lizenz und ein gründliches Review — neu veröffentlicht.

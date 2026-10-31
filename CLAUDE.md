@@ -61,10 +61,13 @@ An den Client geht zusätzlich pro Eintrag: `html` (server-gerendertes Markdown)
 - `public/config.load.php` — lädt `config.php`, legt sie bei Bedarf aus der Vorlage an.
 - `demo-data/` — versionierte Demo-Einträge + Demo-Bilder für den Erststart.
 - `public/css/styles.css` — **Statischer** Aurora-Hintergrund (reine Gradients, keine Animation, kein `filter:blur`), Glas-Optik über halbtransparente Farbschichten (**kein `backdrop-filter` — nirgends**), Bento-Grid als **Masonry** (Spalten 1/2/3/4/5/6 ab 0/640/960/1280/1600/2000 px, Kachel-Grundgröße `min-height: 220px` bzw. 452px für tall/large, `--tile-fs: 0.875rem`; `grid-auto-rows: 2px`, row-spans setzt JS), Systemschriften (keine externen Requests). Unter 1120 px werden die Filter-Chips eine eigene, umbrechende Zeile; unter 640 px wird die Such-/Button-Zeile eine eigene volle Zeile, linksbündig unter dem Logo (Smartphone!).
+- **Stile (seit 1.3.0):** `data-style` = `aurora` (Standard, **unverändert lassen** — Nutzerwunsch) + die leichten `klar` (Apple), `minze` (cat-o-fit), `schiefer` (Energietracker). Leichte Stile: Tokens je `[data-style][data-theme]`, Kartenbild unter `:root:not([data-style="aurora"])`; Tokens mit `var(--hue)` an `.tile`/`.chip` deklarieren, nie auf `:root` (dort gibt es kein `--hue` — Auroras `--tile-tint-*` lösen sich deshalb seit 1.0 zu nichts auf, das gehört zu seiner Optik). Neue Stile in `STYLES` (app.js) **und** im Vor-Paint-Skript (index.php) eintragen — der Selbsttest prüft das.
+- **Tag/Nacht:** `cms-mode` = fehlt (automatisch, folgt `prefers-color-scheme` live) | `light` | `dark`. Knopf: automatisch → hell → dunkel, „A"-Abzeichen, Meldung bei jedem Klick (wie Energietracker `lib/theme.js`).
 - `public/js/app.js` — `CMS`-Klasse: Zustand → `render()` (Template-String, Event-Delegation am Grid), `layoutTiles()` (misst jede Kachel und setzt ihren `grid-row-span` auf die Inhaltshöhe — `ROW_UNIT`/`GAP` müssen zu `grid-auto-rows`/`--gap` im CSS passen), Modal-Steuerung, AJAX, Drag&Drop auf Datenmodell-Basis, leises Polling, Toasts. `localStorage` nur über `store` (try/catch — gesperrter Speicher darf die App nicht stoppen). Demo-Modus über `DEMO`/`demoFetch()`.
 - `VERSION` — einzige Quelle der Release-Nummer (meta generator, Fußzeile, Quellcode-Link, Deploy-Prüfung, Selbsttest gegen CHANGELOG).
 - `tools/selftest.php` — Selbsttest ohne Abhängigkeiten (nur CLI); `tools/build-demo.sh` — statische Demo für GitHub Pages.
-- `CREDITS.md`, `TRADEMARKS.md` — Herkunft/Lizenzen, beschreibend genannte Marken (Stile Graphit/Fluent/Ubuntu/Nord).
+- `CREDITS.md`, `TRADEMARKS.md` — Herkunft/Lizenzen, beschreibend genannte Marken (Vorbild Apple für Klar, Buy Me a Coffee).
+- Unterstützen (seit 1.3.0, wie Energietracker): Fußzeilen-Link `buymeacoffee.com/bingerminger` (`rel="noopener noreferrer"`), README-Badge + Abschnitt, `.github/FUNDING.yml`.
 
 ## Development Commands
 

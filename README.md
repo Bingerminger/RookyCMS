@@ -7,7 +7,9 @@
 **Das Ein-Seiten-Dashboard fürs Zuhause und kleine Teams.**
 Monitoring-, Info- und Link-Kacheln in einem Bento-Grid mit Glas-Optik — betrieben mit nichts als PHP und einer JSON-Datei. Keine Datenbank, kein Composer, kein Build-Schritt, keine externen Requests.
 
-**▶ [Live-Demo ausprobieren](https://bingerminger.github.io/RookyCMS/)** — mit den 17 Beispiel-Kacheln, allen fünf Stilen und dem Bearbeiten-Modal (Passwort `1234`), ganz ohne Installation. Gespeichert wird in der Demo nichts.
+**▶ [Live-Demo ausprobieren](https://bingerminger.github.io/RookyCMS/)** — mit den 17 Beispiel-Kacheln, allen vier Stilen und dem Bearbeiten-Modal (Passwort `1234`), ganz ohne Installation. Gespeichert wird in der Demo nichts.
+
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-support-ffdd00.svg)](https://buymeacoffee.com/bingerminger)
 
 ![RookyCMS Dashboard](docs/screenshots/dashboard.jpg)
 
@@ -19,7 +21,7 @@ Gebaut für den Dauerbetrieb auf einem **Wand- oder Küchen-Tablet im Intranet**
 - **JSON statt Datenbank.** Der komplette Bestand lebt in `data/entries.json` — mit exklusivem Lock, atomarem Schreiben und automatischer Backup-Rotation trotzdem robust.
 - **Ruhig im Betrieb.** Statischer Aurora-Hintergrund, kein `backdrop-filter`, keine Endlos-Animationen — keine GPU-Dauerlast auf Tablets. Leises Polling aktualisiert nur bei echten Änderungen und ruht, solange der Bildschirm aus ist.
 - **Tablet-taugliche Sicherheit.** Kein dauerhaftes Eingeloggt-Sein: Jede Schreibaktion fragt das Passwort frisch ab, es wird nie gespeichert. Wer es durchprobieren will, wird nach fünf Fehlversuchen ausgebremst. Das Wand-Tablet darf öffentlich hängen.
-- **Fünf Stile, Tag und Nacht.** Aurora, Graphit, Fluent, Ubuntu und Nord — jeder mit Tag- und Nachtansicht, umschaltbar per Klick.
+- **Vier Stile, Tag und Nacht von selbst.** Aurora (bunt, mit Glas-Optik) und drei leichte, flache Stile — Klar, Minze, Schiefer —, jeder mit Tag- und Nachtansicht. Tag und Nacht wechseln automatisch mit dem Gerät: Schaltet das Tablet abends auf dunkel, zieht das Dashboard mit.
 - **Läuft überall, wo PHP läuft.** PHP 8.3+, Systemschriften, keine CDNs — auch im Intranet ohne Internetzugang.
 
 ## Screenshots
@@ -28,19 +30,37 @@ Gebaut für den Dauerbetrieb auf einem **Wand- oder Küchen-Tablet im Intranet**
 |---|---|
 | ![Aurora, Nachtansicht](docs/screenshots/dashboard.jpg) | ![Aurora, Tagansicht](docs/screenshots/hell.jpg) |
 
-| Graphit (Tag) | Fluent (Nacht) |
+| Klar (Tag) | Klar (Nacht) |
 |---|---|
-| ![Stil Graphit](docs/screenshots/stil-graphit.jpg) | ![Stil Fluent](docs/screenshots/stil-fluent.jpg) |
+| ![Stil Klar, Tagansicht](docs/screenshots/stil-klar.jpg) | ![Stil Klar, Nachtansicht](docs/screenshots/stil-klar-nacht.jpg) |
 
-| Ubuntu (Nacht) | Nord (Tag) |
+| Minze (Tag) | Minze (Nacht) |
 |---|---|
-| ![Stil Ubuntu](docs/screenshots/stil-ubuntu.jpg) | ![Stil Nord](docs/screenshots/stil-nord.jpg) |
+| ![Stil Minze, Tagansicht](docs/screenshots/stil-minze.jpg) | ![Stil Minze, Nachtansicht](docs/screenshots/stil-minze-nacht.jpg) |
+
+| Schiefer (Tag) | Schiefer (Nacht) |
+|---|---|
+| ![Stil Schiefer, Tagansicht](docs/screenshots/stil-schiefer.jpg) | ![Stil Schiefer, Nachtansicht](docs/screenshots/stil-schiefer-nacht.jpg) |
 
 | Stil-Auswahl | Bearbeiten-Modal |
 |---|---|
 | ![Stil-Auswahl mit Vorschau](docs/screenshots/stilwahl.jpg) | ![Bearbeiten-Modal](docs/screenshots/modal.jpg) |
 
-<p align="center"><img src="docs/screenshots/mobile.jpg" alt="Smartphone-Ansicht" width="300"></p>
+<p align="center">
+  <img src="docs/screenshots/mobile.jpg" alt="Smartphone, Aurora" width="280">
+  <img src="docs/screenshots/mobile-minze.jpg" alt="Smartphone, Minze" width="280">
+</p>
+
+### Die Stile
+
+| Stil | Anmutung | Vorbild |
+|---|---|---|
+| **Aurora** | bunt, Glas-Optik über weichem Farbverlauf — der Standard | — |
+| **Klar** | ruhiges Grau, weiße Karten, Blau als Akzent | Apple (macOS/iOS) |
+| **Minze** | frisch und rund, randlose Karten, Minzgrün | cat-o-fit |
+| **Schiefer** | sachlich, Kategorie als Randstreifen, Beschriftung in Mono | Energietracker |
+
+Die drei leichten Stile zeigen Kachelbilder als Kopfband in voller Farbe; die Kategoriefarbe steckt im Badge statt in der ganzen Kachel.
 
 ## Schnellstart
 
@@ -68,11 +88,11 @@ Danach: **Passwort in `public/config.php` ändern**, Demo-Kacheln nach Belieben 
 | Verschieben | Kachel per Drag & Drop ziehen; Drop im Freiraum hängt ans Ende |
 | Suchen | `/` fokussiert die Suche (matcht Titel, Text, Tags) |
 | Filtern | Kategorie-Chips in der Topbar, Zähler laufen live mit |
-| Stil | Palette-Button: Aurora, Graphit, Fluent, Ubuntu oder Nord — mit Farbvorschau |
-| Tag / Nacht | Sonne/Mond-Button kehrt jeden Stil um |
+| Stil | Palette-Button: Aurora, Klar, Minze oder Schiefer — mit Farbvorschau |
+| Tag / Nacht | Sonne/Mond-Button: **automatisch** (Standard, kleines „A" am Knopf) → immer hell → immer dunkel |
 | Modal schließen | `ESC` |
 
-Jede Schreibaktion fragt das Passwort ab; nach dem Speichern (oder Abbrechen) ist man automatisch wieder abgemeldet. Stil und Tag/Nacht merkt sich jedes Gerät selbst.
+Jede Schreibaktion fragt das Passwort ab; nach dem Speichern (oder Abbrechen) ist man automatisch wieder abgemeldet. Stil und Tag/Nacht merkt sich jedes Gerät selbst. Im Automatikmodus folgt das Dashboard dem Hell/Dunkel-Modus des Geräts — auch, während es offen ist; das Symbol zeigt, was gerade gilt.
 
 ### Kachelgrößen (Bento)
 
@@ -140,6 +160,10 @@ VERSION                     Release-Version (steht auch im <head> und in der Fu�
 ## Herkunft
 
 RookyCMS ist aus einem privaten Hausinfo-Dashboard („SimpleCMS") hervorgegangen, das seit Jahren auf einem Küchen-iPad im Dauereinsatz ist. Die Demo-Daten zeigen genau diesen Anwendungsfall — ein Haushalt in Leipzig. 😉
+
+## Unterstützen
+
+RookyCMS ist unabhängig: keine Firma dahinter, keine Werbung, kein Cloud-Konto, keine Datensammlung — es läuft bei dir im Heimnetz und fragt niemanden. Wenn es dir den Alltag am Küchen-Tablet leichter macht und du etwas zurückgeben möchtest, kannst du mir [einen Kaffee spendieren](https://buymeacoffee.com/bingerminger) — ganz freiwillig. Sterne, Fehlermeldungen und Weitersagen helfen genauso.
 
 ## Lizenz
 

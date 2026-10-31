@@ -2,7 +2,7 @@
     {
         "id": "aa10c001",
         "title": "👋 Willkommen bei RookyCMS",
-        "text": "## Dein Dashboard, eine Seite\n\nRookyCMS ist ein **leichtgewichtiges PHP-CMS** für Hausinfo- und Monitoring-Dashboards: *Bento-Grid*, JSON-Storage, `kein Composer`, keine Datenbank.\n\n- Kacheln anlegen, bearbeiten, ziehen — alles in **einem Modal**\n- Demo-Passwort: `1234` (nach der Installation in config.php ändern!)\n- Taste **N** legt eine neue Kachel an, **/** springt in die Suche\n- Palette oben rechts: fünf Stile, jeder mit Tag- und Nachtansicht\n\nDiese Kacheln sind Demo-Daten — lösch sie einfach und leg deine eigenen an.",
+        "text": "## Dein Dashboard, eine Seite\n\nRookyCMS ist ein **leichtgewichtiges PHP-CMS** für Hausinfo- und Monitoring-Dashboards: *Bento-Grid*, JSON-Storage, `kein Composer`, keine Datenbank.\n\n- Kacheln anlegen, bearbeiten, ziehen — alles in **einem Modal**\n- Demo-Passwort: `1234` (nach der Installation in config.php ändern!)\n- Taste **N** legt eine neue Kachel an, **/** springt in die Suche\n- Palette oben rechts: vier Stile — Aurora, Klar, Minze, Schiefer\n- Tag und Nacht wechseln automatisch mit dem Gerät; Sonne/Mond schaltet auf immer hell oder dunkel\n\nDiese Kacheln sind Demo-Daten — lösch sie einfach und leg deine eigenen an.",
         "link": "https://github.com/Bingerminger/RookyCMS",
         "image": "demo-welcome.png",
         "category": "news",

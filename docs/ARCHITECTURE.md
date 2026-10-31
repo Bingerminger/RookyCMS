@@ -11,7 +11,7 @@ public/                    ← Webroot
 ├── config.php             echte Konfiguration (pro Instanz, nicht im Repo)
 ├── CmsManager.php         Persistenz & Geschäftslogik
 ├── Category.php, Size.php Enums
-├── css/styles.css         Aurora, Glas-Optik, Masonry-Bento, fünf Stile
+├── css/styles.css         Aurora (Glas-Optik) + drei leichte Stile, Masonry-Bento
 ├── js/app.js              CMS-Klasse (Zustand, Rendern, Modal, DnD, Polling, Demo-Modus)
 ├── .htaccess              Apache: data/, backup/ und Punktdateien → 404
 ├── uploads/               hochgeladene Bilder (pro Instanz)
@@ -81,6 +81,17 @@ Das Grid nutzt `grid-auto-rows: 2px`; **JS misst jede Kachel** (`layoutTiles()`)
 - Spalten: 1/2/3/4/5/6 ab 0/640/960/1280/1600/2000 px; Grundgröße `min-height: 220px` (tall/large: 452px), Kachel-Schriftgröße `--tile-fs: 0.875rem`.
 - `wide`/`large` belegen 2 Spalten, `tall`/`large` bekommen die doppelte Grundhöhe; auf Mobile wird alles 1×1.
 - Spalten sind `minmax(0, 1fr)`, der Kacheltext bricht mit `overflow-wrap: anywhere` um — eine lange URL kann weder eine Spalte über den Viewport drücken noch unter dem `overflow: hidden` der Kachel verschwinden.
+- Gemessen wird ohne Zurücksetzen (seit 1.3.0): Das Grid streckt die Kacheln nicht (`align-items: start`), ihre Höhe ist auch mit gesetztem Span die Inhaltshöhe. Bis 1.2 fiel das Grid zum Messen kurz zusammen, der Scrollbalken verschwand und die Kacheln wurden zu niedrig gemessen — bei festen Scrollbalken (Desktop) ragten sie dann einige Pixel ineinander. Ändert sich die Breite durchs Setzen (Scrollbalken kommt), misst `layoutTiles()` ein zweites Mal. Nach jedem Stilwechsel wird neu gemessen.
+
+## Stile und Tag/Nacht
+
+Zwei Attribute an `<html>`: `data-style` (aurora, klar, minze, schiefer) und `data-theme` (light, dark).
+
+- **Aurora** ist der Standard: Glas-Optik über dem statischen Farbverlauf. Seine Tokens stehen in `:root`/`[data-theme]`.
+- **Klar, Minze, Schiefer** sind leicht und flach: Farb-Tokens je Stil und Tageszeit (`[data-style="…"][data-theme="…"]`), das gemeinsame Kartenbild unter `:root:not([data-style="aurora"])` — weiße bzw. dunkle Karten mit feiner Kante und weichem Schatten, Badge in Kategoriefarbe, Bild als Kopfband, schlichte Bedienelemente. Kategorieabhängige Tokens (`--badge-*`, `--chip-*`) werden **an der Kachel bzw. am Chip** deklariert: Ein Custom Property mit `var(--hue)` wird dort aufgelöst, wo es steht — auf `:root` gäbe es kein `--hue`. (Aurora nutzt `--tile-tint-*` auf `:root`; die lösen sich deshalb zu nichts auf. Das ist seit 1.0 so und gehört zu Auroras Optik — nicht „reparieren", ohne das Aussehen bewusst zu ändern.)
+- **Tag/Nacht** hat drei Modi wie im Energietracker: automatisch (Standard, kein Eintrag in `localStorage`), immer hell, immer dunkel (`cms-mode`). Das Vor-Paint-Skript in `index.php` setzt beides vor dem ersten Bild (kein Aufblitzen); `bindTheme()` folgt im Automatikmodus dem Gerät live (`matchMedia('(prefers-color-scheme: light)')`), zeigt am Knopf die wirksame Darstellung plus „A" und meldet jeden Wechsel kurz. `theme-color` folgt `--bg-0` des aktiven Stils.
+- Gespeicherte Stile aus 1.2 werden abgebildet (Graphit/Fluent → Klar, Nord → Schiefer, Ubuntu → Minze); der alte Schlüssel `cms-theme` wird entfernt, damit jedes Gerät auf „automatisch" startet.
+- Die Stil-Liste steht in `STYLES` (app.js) und im Vor-Paint-Skript; `tools/selftest.php` prüft, dass beide und das CSS übereinstimmen.
 
 ## Öffentliche Demo (GitHub Pages)
 

@@ -24,15 +24,14 @@ Kacheln einträgst, öffnet erst dein Browser, wenn du sie anklickst.
 
 ## Vorbilder der Stile
 
-Die fünf Stile sind eigene CSS-Farbsätze. Vier davon lehnen sich an bekannte
-Farbwelten an:
+Die vier Stile sind eigene CSS-Farbsätze (seit 1.3.0; bis 1.2 gab es
+Graphit, Fluent, Ubuntu und Nord). Drei lehnen sich an bekannte Farbwelten an:
 
 | Stil | angelehnt an |
 |---|---|
-| **Graphit** | die Schwarz-/Weiß-Anmutung von macOS und iOS |
-| **Fluent** | Fluent Design und das Mica-Grau von Windows 11 |
-| **Ubuntu** | die Ubuntu-Farben Aubergine und Orange |
-| **Nord** | die [Nord](https://www.nordtheme.com/)-Palette von Arctic Ice Studio & Sven Greb (MIT-Lizenz) |
+| **Klar** | die ruhige Grau-/Weiß-Anmutung von macOS und iOS mit Systemblau |
+| **Minze** | [cat-o-fit](https://github.com/Bingerminger/cat-o-fit) — Schwesterprojekt desselben Autors |
+| **Schiefer** | [Energietracker](https://github.com/Bingerminger/energietracker) — Schwesterprojekt desselben Autors |
 
 Übernommen sind nur einzelne Farbwerte, kein Code und keine Grafiken. Zu den
 Namen siehe [TRADEMARKS.md](TRADEMARKS.md).
