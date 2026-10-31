@@ -703,16 +703,17 @@ code, kbd, .mono { font-family: var(--font-mono); }
     column-gap: var(--gap);
     row-gap: 0;
     grid-auto-rows: 2px;
-    grid-template-columns: repeat(1, 1fr);
+    grid-template-columns: repeat(1, minmax(0, 1fr));
     grid-auto-flow: dense;
     align-items: start;
 }
-/* Spaltenraster wie die ursprüngliche Prod-Version */
-@media (min-width: 640px)  { .bento { grid-template-columns: repeat(2, 1fr); } }
-@media (min-width: 960px)  { .bento { grid-template-columns: repeat(3, 1fr); } }
-@media (min-width: 1280px) { .bento { grid-template-columns: repeat(4, 1fr); } }
-@media (min-width: 1600px) { .bento { grid-template-columns: repeat(5, 1fr); } }
-@media (min-width: 2000px) { .bento { grid-template-columns: repeat(6, 1fr); } }
+/* Spaltenraster wie die ursprüngliche Prod-Version. minmax(0, 1fr) statt
+   1fr: sonst darf ein langes Wort eine Spalte über den Viewport drücken. */
+@media (min-width: 640px)  { .bento { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 960px)  { .bento { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (min-width: 1280px) { .bento { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (min-width: 1600px) { .bento { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+@media (min-width: 2000px) { .bento { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
 .tile.size-wide  { grid-column: span 2; }
 .tile.size-large { grid-column: span 2; }
 /* Mindesthöhen = Prod-Kachelgrößen (220px-Raster); Inhalt darf die
@@ -914,7 +915,10 @@ code, kbd, .mono { font-family: var(--font-mono); }
     flex: 1 1 auto;
     min-height: 0;
     /* Kein Clamp, kein Fade: die Kachelhöhe folgt dem Inhalt
-       (Masonry-Spans in app.js) — es wird nichts abgeschnitten. */
+       (Masonry-Spans in app.js) — es wird nichts abgeschnitten.
+       Lange URLs/Wörter brechen um, statt rechts unter overflow:hidden
+       der Kachel zu verschwinden. */
+    overflow-wrap: anywhere;
 }
 .tile__body p { margin: 0 0 4px; }
 .tile__body p:last-child { margin-bottom: 0; }
@@ -983,6 +987,43 @@ code, kbd, .mono { font-family: var(--font-mono); }
     border: 1px solid var(--border);
 }
 .empty__art { color: var(--text-3); margin-bottom: 14px; }
+
+/* Fußzeile: Version + Quellcode-Link (AGPL §13) — bewusst leise */
+.site-foot {
+    max-width: var(--content-w);
+    margin: 28px auto 18px;
+    padding: 0 clamp(12px, 2vw, 24px);
+    text-align: center;
+    font-size: 0.7rem;
+    color: var(--text-3);
+}
+.site-foot a { text-decoration: underline; text-underline-offset: 2px; }
+.site-foot a:hover { color: var(--text-1); }
+
+/* Suche/Filter ohne Treffer */
+.noresults {
+    margin: 40px auto;
+    text-align: center;
+    color: var(--text-3);
+    font-size: 0.9rem;
+}
+
+/* -------- Öffentliche Demo (GitHub Pages, data-demo) -------- */
+.demo-banner {
+    max-width: var(--content-w);
+    margin: 0 auto 12px;
+    padding: 8px 14px;
+    border-radius: var(--r-md);
+    background: var(--surface-strong);
+    border: 1px solid hsl(var(--accent-h) var(--accent-s) var(--accent-l) / 0.45);
+    color: var(--text-2);
+    font-size: 0.82rem;
+}
+.demo-banner strong { color: var(--accent-soft); }
+[data-theme="light"] .demo-banner strong { color: var(--accent-deep); }
+.demo-banner code { padding: 0 4px; border-radius: 4px; background: var(--surface-hover); }
+.demo-banner a { color: var(--accent-soft); text-decoration: underline; text-underline-offset: 3px; white-space: nowrap; }
+[data-theme="light"] .demo-banner a { color: var(--accent-deep); }
 .empty h2 { margin: 0 0 6px; font-weight: 700; letter-spacing: -0.02em; }
 .empty p  { margin: 0 0 20px; color: var(--text-2); }
 
@@ -1001,6 +1042,7 @@ code, kbd, .mono { font-family: var(--font-mono); }
     position: relative;
     width: min(620px, 100%);
     max-height: min(92vh, 860px);
+    max-height: min(92dvh, 860px); /* iOS: Höhe ohne die eingeblendete Tastatur/Adressleiste */
     overflow-y: auto; overflow-x: hidden;
     background: var(--panel);
     border: 1px solid var(--border-strong);
@@ -1040,10 +1082,10 @@ code, kbd, .mono { font-family: var(--font-mono); }
 /* -------- Form -------- */
 .grid-2 {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
 }
-@media (max-width: 560px) { .grid-2 { grid-template-columns: 1fr; } }
+@media (max-width: 560px) { .grid-2 { grid-template-columns: minmax(0, 1fr); } }
 .field { display: flex; flex-direction: column; gap: 5px; }
 .field--span { grid-column: 1 / -1; }
 .field > label {
@@ -1084,6 +1126,8 @@ code, kbd, .mono { font-family: var(--font-mono); }
     font-size: 0.85rem;
     line-height: 1.55;
 }
+/* iPad/iPhone zoomen beim Fokus in Felder unter 16px hinein */
+@media (pointer: coarse) { .field textarea { font-size: 16px; } }
 .field select {
     appearance: none;
     background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24'><path d='m6 9 6 6 6-6' fill='none' stroke='%23999' stroke-width='2' stroke-linecap='round'/></svg>");

@@ -131,6 +131,9 @@ final class CmsManager
         return array_map(static function (array $e): array {
             $e['html']  = self::parseMarkdown($e['text']);
             $e['plain'] = self::stripMarkdown($e['text']);
+            // Ziel des „Öffnen"-Links nur mit erlaubtem Schema (Altdaten
+            // könnten noch javascript: o. ä. tragen); `link` bleibt fürs Formular roh.
+            $e['href']  = self::isSafeUrl($e['link']) ? $e['link'] : '';
             return $e;
         }, $this->getEntries());
     }
@@ -146,9 +149,9 @@ final class CmsManager
             $id = $this->newId($entries);
             $entries[] = $this->normalize([
                 'id'         => $id,
-                'title'      => trim((string)($data['title'] ?? '')),
-                'text'       => trim((string)($data['text']  ?? '')),
-                'link'       => trim((string)($data['link']  ?? '')),
+                'title'      => self::cleanText((string)($data['title'] ?? '')),
+                'text'       => self::cleanText((string)($data['text']  ?? '')),
+                'link'       => self::cleanText((string)($data['link']  ?? '')),
                 'image'      => $data['image']    ?? null,
                 'category'   => $data['category'] ?? Category::All->value,
                 'size'       => $data['size']     ?? Size::Normal->value,
@@ -177,9 +180,9 @@ final class CmsManager
                 $found = true;
                 $merged = [
                     'id'         => $id,
-                    'title'      => trim((string)($data['title'] ?? $current['title'] ?? '')),
-                    'text'       => trim((string)($data['text']  ?? $current['text']  ?? '')),
-                    'link'       => trim((string)($data['link']  ?? $current['link']  ?? '')),
+                    'title'      => self::cleanText((string)($data['title'] ?? $current['title'] ?? '')),
+                    'text'       => self::cleanText((string)($data['text']  ?? $current['text']  ?? '')),
+                    'link'       => self::cleanText((string)($data['link']  ?? $current['link']  ?? '')),
                     'category'   => $data['category'] ?? $current['category'] ?? Category::All->value,
                     'size'       => $data['size']     ?? $current['size']     ?? Size::Normal->value,
                     'tags'       => $data['tags']     ?? $current['tags']     ?? [],
@@ -189,18 +192,23 @@ final class CmsManager
                     'updated_at' => date('Y-m-d H:i:s'),
                     'image'      => $current['image'] ?? null,
                 ];
-                if ($deleteImage) {
-                    $this->unlinkImage($current['image'] ?? null);
-                    $merged['image'] = null;
-                } elseif ($newImage !== null) {
+                // Ein neues Bild ersetzt das alte (auch wenn vorher „Entfernen"
+                // geklickt wurde); sonst entfernt delete_image das vorhandene.
+                if ($newImage !== null) {
                     $this->unlinkImage($current['image'] ?? null);
                     $merged['image'] = $newImage;
+                } elseif ($deleteImage) {
+                    $this->unlinkImage($current['image'] ?? null);
+                    $merged['image'] = null;
                 }
                 $entries[$i] = $this->normalize($merged);
                 break;
             }
             return $entries;
         });
+        if (!$found) {
+            $this->unlinkImage($newImage); // Upload ohne Ziel nicht liegen lassen
+        }
         return $found
             ? ['success' => true, 'id' => $id]
             : ['success' => false, 'error' => 'Eintrag nicht gefunden'];
@@ -595,6 +603,7 @@ final class CmsManager
      */
     public static function stripMarkdown(string $text): string
     {
+        $text = self::cleanText($text);
         // Links: [text](url) → text
         $text = preg_replace('/\[([^\]]+)\]\([^)]+\)/', '$1', $text) ?? $text;
         // Bold/Italic/Code/Strike
@@ -611,16 +620,54 @@ final class CmsManager
         return trim($text);
     }
 
+    /**
+     * Einheitliche Zeilenenden, ohne NUL-Bytes, außen getrimmt.
+     *
+     * Browser schicken Textarea-Inhalte mit CRLF. Ohne Normalisierung
+     * greifen die Absatz-Regeln (\n\n) nicht, und Zeilen hinter einer
+     * Überschrift liefen zusammen. NUL ist das Platzhalter-Zeichen der
+     * Link-Pipeline und darf deshalb nie aus dem Text selbst kommen.
+     */
+    public static function cleanText(string $text): string
+    {
+        return trim(str_replace(["\r\n", "\r", "\x00"], ["\n", "\n", ''], $text));
+    }
+
+    /** Link-Schemata, die als href ausgeliefert werden (alles andere fällt weg). */
+    private const array SAFE_URL_SCHEMES = ['http', 'https', 'mailto', 'tel', 'ftp', 'smb', 'ssh', 'vnc', 'rdp'];
+
+    /**
+     * Prüft, ob eine URL als Link ausgeliefert werden darf: erlaubte
+     * Schemata oder relative Pfade. `javascript:`, `data:`, `vbscript:`
+     * & Co. fallen durch — auch verschleiert, denn Browser ignorieren
+     * Steuer- und Leerzeichen im Schema (`java\tscript:`), also prüfen
+     * wir ohne sie.
+     */
+    public static function isSafeUrl(string $url): bool
+    {
+        $probe = preg_replace('/[\x00-\x20\x7f]+/', '', $url) ?? '';
+        if ($probe === '') {
+            return false;
+        }
+        if (preg_match('/^([a-z][a-z0-9+.\-]*):/i', $probe, $m) !== 1) {
+            return true; // kein Schema → relativ (/pfad, #anker, seite.html)
+        }
+        return in_array(strtolower($m[1]), self::SAFE_URL_SCHEMES, true);
+    }
+
     // ---------- Markdown ----------
 
     /**
      * Sicheres, minimales Markdown → HTML.
      * - Escape vor allem
      * - Headings/Listen/Inline
-     * - Links über Platzhalter (kein wiederholter substr_replace)
+     * - Links über Platzhalter (kein wiederholter substr_replace),
+     *   nur mit erlaubtem Schema (isSafeUrl), sonst bleibt der Linktext
      */
     public static function parseMarkdown(string $text): string
     {
+        $text = self::cleanText($text);
+
         // Schritt 1: Links zuerst extrahieren (vor Escape, damit Klammern erhalten bleiben),
         // durch Platzhalter ersetzen.
         $links = [];
@@ -665,27 +712,46 @@ final class CmsManager
         $text = preg_replace_callback(
             '/\x00LINK(\d+)\x00/',
             static function (array $m) use ($links): string {
-                $i = (int)$m[1];
-                $linkText = htmlspecialchars($links[$i]['text'], ENT_QUOTES, 'UTF-8');
-                $linkUrl  = htmlspecialchars($links[$i]['url'],  ENT_QUOTES, 'UTF-8');
+                $link = $links[(int)$m[1]] ?? null;
+                if ($link === null) {
+                    return '';
+                }
+                $linkText = htmlspecialchars($link['text'], ENT_QUOTES, 'UTF-8');
+                if (!self::isSafeUrl($link['url'])) {
+                    return $linkText;
+                }
+                $linkUrl = htmlspecialchars($link['url'], ENT_QUOTES, 'UTF-8');
                 return '<a href="' . $linkUrl . '" target="_blank" rel="noopener">' . $linkText . '</a>';
             },
             $text
         ) ?? $text;
 
-        // Schritt 7: Zeilenumbrüche
-        // Doppelte Newlines = Absatzgrenze, einzelne = <br>
-        $blocks = preg_split('/\n{2,}/', $text);
-        $blocks = array_map(static function (string $b): string {
-            $b = trim($b);
-            if ($b === '') return '';
-            // Bereits geblockte Elemente nicht in <p> wickeln
-            if (preg_match('/^<(h\d|ul|ol|pre|blockquote|p)/i', $b)) {
-                return $b;
+        // Schritt 7: Zeilenumbrüche — zeilenweise, damit auch Text direkt
+        // unter einer Überschrift oder Liste (ohne Leerzeile) seine
+        // Umbrüche behält. Leerzeile = Absatzgrenze, einzelne = <br>;
+        // Überschriften und Listenzeilen bleiben eigene Blöcke.
+        $out = [];
+        foreach (preg_split('/\n{2,}/', $text) ?: [] as $block) {
+            $para = [];
+            foreach (explode("\n", $block) as $line) {
+                $line = trim($line);
+                if ($line === '') {
+                    continue;
+                }
+                if (preg_match('/^<(h\d|ul|li)[ >]/', $line)) {
+                    if ($para !== []) {
+                        $out[] = '<p>' . implode("<br />\n", $para) . '</p>';
+                        $para = [];
+                    }
+                    $out[] = $line;
+                } else {
+                    $para[] = $line;
+                }
             }
-            return '<p>' . nl2br($b) . '</p>';
-        }, $blocks);
-
-        return implode("\n", array_filter($blocks, static fn($b) => $b !== ''));
+            if ($para !== []) {
+                $out[] = '<p>' . implode("<br />\n", $para) . '</p>';
+            }
+        }
+        return implode("\n", $out);
     }
 }

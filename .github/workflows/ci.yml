@@ -1,0 +1,41 @@
+name: Prüfen
+
+# Syntax, Selbsttest (tools/selftest.php: Markdown-/Link-Sicherheit,
+# Persistenz, HTTP-API samt Passwort-Drosselung, Release-Stempel) und ein
+# Probebau der Demo — bei jedem Push und Pull Request. Nur Leserechte.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Selbsttest (PHP ${{ matrix.php }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php: ["8.3", "8.4"]
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: PHP einrichten
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: mbstring, json, fileinfo, gd
+          coverage: none
+
+      - name: Syntax
+        run: |
+          for f in public/*.php tools/*.php; do php -l "$f"; done
+          node --check public/js/app.js
+
+      - name: Selbsttest
+        run: php tools/selftest.php
+
+      - name: Demo-Probebau
+        run: bash tools/build-demo.sh dist/demo

@@ -6,6 +6,8 @@ Alle Endpoints laufen über `public/api.php?action=<name>`. Antworten sind JSON 
 
 Schreibende Actions erwarten das Passwort **bei jedem Request** — als Header `X-Auth-Password` oder POST-Feld `password`. Der Server vergleicht timing-safe mit `hash_equals()`. Es gibt keine Session und keine Tokens; 401 bedeutet „Passwort erneut abfragen".
 
+Nach 5 Fehlversuchen in Folge antwortet jede passwortgeschützte Action (auch `verify`) für 60 s mit `429` und `Retry-After: <Sekunden>`; jede weitere Sperre dauert doppelt so lang (max. 15 min). Details: [SECURITY.md](SECURITY.md#drosselung-von-fehlversuchen-seit-120).
+
 ## Übersicht
 
 | Action | Methode | Auth | Zweck |
@@ -39,7 +41,7 @@ Mit unverändertem `since` bleibt die Antwort winzig:
 { "success": true, "changed": false, "version": "a1b2…" }
 ```
 
-`version` ist ein Content-Hash (`xxh128`) der Datendatei. Jeder Eintrag enthält zusätzlich `html` (server-gerendertes Markdown) und `plain` (Klartext für Suche/Tooltip).
+`version` ist ein Content-Hash (`xxh128`) der Datendatei. Jeder Eintrag enthält zusätzlich `html` (server-gerendertes Markdown), `plain` (Klartext für Suche/Tooltip) und `href` (das geprüfte Linkziel für „Öffnen" — leer, wenn `link` fehlt oder ein unzulässiges Schema trägt; `link` selbst bleibt roh fürs Formular).
 
 Beispiel-Polling per curl:
 
@@ -77,7 +79,9 @@ Antwortet mit `text/html` (dem fertig escapten Fragment) statt JSON.
 | `image` | optionaler Datei-Upload (JPEG/PNG/GIF/WebP, max. 2 MB) |
 | `delete_image` | `1` = vorhandenes Bild entfernen |
 
-Antwort: `{"success":true,"id":"<id>","version":"…","entries":[…]}`. Fehler: 401 (Auth), 404 (unbekannte id), 422 (Validierung/Upload), 500.
+`link` muss mit einem erlaubten Schema beginnen (`http`, `https`, `mailto`, `tel`, `ftp`, `smb`, `ssh`, `vnc`, `rdp`) oder relativ sein — sonst 422. Zeilenenden in `text` werden auf LF vereinheitlicht. Kommen neues Bild und `delete_image=1` zusammen, ersetzt das neue Bild das alte.
+
+Antwort: `{"success":true,"id":"<id>","version":"…","entries":[…]}`. Fehler: 401 (Auth), 404 (unbekannte id), 422 (Validierung/Upload), 429 (Drosselung), 500.
 
 ### `delete` — löschen
 
@@ -95,7 +99,7 @@ POST api.php?action=reorder
 order=["id1","id2", …]   (JSON-Array als String)
 ```
 
-Nicht genannte IDs werden hinten angehängt (nichts geht verloren). Antwort wie `save`.
+Nicht genannte IDs werden hinten angehängt (nichts geht verloren), unbekannte ignoriert. Ein Array mit Nicht-Strings ergibt 422. Antwort wie `save`.
 
 ---
 
@@ -111,5 +115,10 @@ Nicht genannte IDs werden hinten angehängt (nichts geht verloren). Antwort wie 
 | 401 | Passwort fehlt/falsch |
 | 404 | Eintrag nicht gefunden |
 | 405 | falsche HTTP-Methode |
-| 422 | Validierungs-/Upload-Fehler |
+| 422 | Validierungs-/Upload-Fehler (auch: Link mit unzulässigem Schema) |
+| 429 | zu viele Fehlversuche — `Retry-After` abwarten |
 | 500 | Serverfehler (z. B. korrupte Datendatei) |
+
+## Demo-Modus
+
+Die öffentliche Demo auf GitHub Pages hat keinen PHP-Server. `public/js/app.js` beantwortet dort (`data-demo` an `<html>`) dieselben Actions lokal in `demoFetch()`: `entries` liefert den vorgerenderten Bestand, `verify` akzeptiert das Demo-Passwort `1234`, `reorder` gilt bis zum Neuladen, `save`/`delete` werden mit einem Hinweis abgelehnt. **Eine neue Action braucht dort ebenfalls eine Antwort.**

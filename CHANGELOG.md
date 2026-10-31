@@ -2,6 +2,92 @@
 
 Alle nennenswerten Änderungen an RookyCMS.
 
+## [1.2.0] — 2026-10-31
+
+Live-Demo, AGPL-Lizenz und ein gründliches Review. Ausprobieren geht jetzt
+ohne Installation, und eine Reihe von Fehlern aus dem Alltag am Wand-Tablet
+ist behoben.
+
+### Hinzugefügt
+
+- **Öffentliche Live-Demo auf GitHub Pages** —
+  <https://bingerminger.github.io/RookyCMS/> mit den 17 Demo-Kacheln, allen
+  fünf Stilen, Suche, Filtern, Verschieben und dem Bearbeiten-Modal
+  (Passwort `1234`). Gespeichert wird in der Demo nichts, ein Banner verlinkt
+  die eigene Installation. Gebaut wie bei Sternenflunk und im Energietracker:
+  `tools/build-demo.sh` rendert die Seite einmal mit dem echten PHP-Server,
+  `app.js` beantwortet die API im Demo-Modus (`data-demo`) selbst;
+  `.github/workflows/pages.yml` baut aus dem neuesten Release-Tag.
+- **Drosselung von Fehlversuchen:** Nach fünf falschen Passwörtern in Folge
+  ist für 60 Sekunden Pause (429), jede weitere Sperre dauert doppelt so
+  lang, höchstens 15 Minuten. Gespeichert wird nur ein Hash der
+  Client-Adresse.
+- **Fußzeile mit Version und Quellcode-Link** auf genau die laufende Version;
+  die Version steht zusätzlich in `<meta name="generator">` (neue Datei
+  `VERSION`).
+- **Hinweis „Keine Kachel passt zu Suche und Filter"** statt einer leeren
+  Seite.
+- **Selbsttest** `php tools/selftest.php` (Markdown- und Link-Sicherheit,
+  Persistenz, HTTP-API samt Drosselung, Release-Stempel) und CI-Workflow
+  `.github/workflows/ci.yml` auf PHP 8.3 und 8.4.
+- Neue Galerie in der README: alle Stile, Tag/Nacht, Stil-Auswahl, Modal,
+  Smartphone. Die Willkommenskachel der Demo erklärt die Stil-Auswahl.
+
+### Sicherheit
+
+- **Links mit `javascript:`, `data:` & Co. werden nicht mehr ausgeliefert** —
+  weder im Markdown noch im Feld „Link" (dort 422 beim Speichern). Erlaubt
+  sind `http(s)`, `mailto`, `tel`, `ftp`, `smb`, `ssh`, `vnc`, `rdp` und
+  relative Pfade, auch verschleierte Schreibweisen fallen durch.
+- **`public/data/` ist unter Apache gesperrt** (neue `public/.htaccess`, nur
+  `AllowOverride FileInfo` nötig): Datenbestand und Backups — auch gelöschter
+  Kacheln — waren bisher direkt per URL lesbar. Für nginx steht die Regel in
+  `docs/INSTALL.md`.
+- Initialdaten im `<script>`-Block sind gegen Kachelinhalte wie
+  `<!--<script>` kodiert, die den Script-Block aufbrechen konnten;
+  `X-Content-Type-Options: nosniff` auf Seite und API.
+- Ein eingeschleustes NUL-Zeichen im Kacheltext konnte die ganze Seite mit
+  einem Fehler stilllegen.
+- `tools/selftest.php` läuft nur auf der Kommandozeile.
+
+### Behoben
+
+- **Absätze gehen nicht mehr verloren:** Browser speichern Textfelder mit
+  Windows-Zeilenenden; Absätze und Umbrüche solcher Kacheln wurden falsch
+  oder gar nicht erkannt. Zeilenenden werden jetzt beim Anzeigen und
+  Speichern vereinheitlicht. Auch Text direkt unter einer Überschrift oder
+  Liste behält seine Zeilenumbrüche.
+- **App startet auch mit gesperrtem Website-Speicher** (Safari-Privatmodus,
+  blockierte Cookies) — bisher blieb das Dashboard leer.
+- **Passwort mitten in der Aktion abgelaufen** (401, etwa nach einer
+  Passwortänderung): Der Passwort-Dialog öffnet sich erneut, danach geht es
+  mit den unveränderten Eingaben weiter — bisher blieb nur eine Fehlermeldung.
+- **Lange Adressen und Wörter** im Kacheltext brechen um, statt rechts
+  abgeschnitten zu werden.
+- Eine zu große oder falsche Bilddatei wird nach der Ablehnung aus dem Feld
+  genommen, statt beim Speichern doch hochgeladen zu werden. Ein neues Bild
+  ersetzt das alte auch nach „Entfernen"; Uploads ohne Ziel werden
+  aufgeräumt.
+- iPad/iPhone zoomen beim Tippen ins Textfeld nicht mehr hinein; das Modal
+  passt sich der eingeblendeten Tastatur an.
+- Die Markdown-Vorschau zeigt immer den neuesten Stand (überholte Antworten
+  werden verworfen).
+- Formularfelder als Array (`feld[]=…`) führen nicht mehr zu einem
+  Serverfehler.
+
+### Geändert
+
+- **Lizenz: GNU AGPL v3.0 oder neuer** (wie Energietracker und Sternenflunk).
+  Versionen bis 1.1.0 bleiben unter MIT erhältlich. Neu: `CREDITS.md` und
+  `TRADEMARKS.md`.
+- Polling ruht, solange der Tab verdeckt oder das Display aus ist; beim
+  Aufwachen wird wie bisher sofort aktualisiert.
+- Ein Demo-Bild ist durch ein selbst erzeugtes Muster ersetzt — alle
+  Demo-Inhalte sind jetzt eigene Werke.
+- Doku: Installationsanleitung mit Prüfbefehlen (Version, Datenordner),
+  Sicherheitsseite mit Drosselung und Link-Schemata, API mit `href`, 429 und
+  Demo-Modus.
+
 ## [1.1.0] — 2026-07-15
 
 ### Hinzugefügt

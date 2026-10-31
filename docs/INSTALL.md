@@ -24,12 +24,13 @@ php -S localhost:8000
 
 Hinweise für diesen Unterverzeichnis-Betrieb:
 
-- Der Ordner `demo-data/` liegt dann ebenfalls im Web-Pfad. Das ist unkritisch (er enthält nur die öffentlichen Demo-Inhalte), kann aber per Webserver-Regel gesperrt werden.
+- Die Web Station läuft mit Apache (nginx davor) und wertet `.htaccess` aus. Die mitgelieferte `public/.htaccess` sperrt damit `public/data/` (Datenbestand + Backups) und `public/backup/` — kein Handgriff nötig. Kontrolle nach der Installation: `http://<nas>/rookycms/public/data/entries.json` muss 404 liefern.
+- Der Ordner `demo-data/` liegt dann ebenfalls im Web-Pfad. Das ist unkritisch (er enthält nur die öffentlichen Demo-Inhalte). `tools/` und `.github/` braucht der Server nicht — einfach weglassen; `tools/selftest.php` antwortet über das Web ohnehin nur mit 404.
 - RookyCMS setzt selbst keine Cache-Header für Assets; CSS/JS tragen einen mtime-basierten Cache-Buster (`?v=`), damit Browser nach Updates nie auf alten Versionen hängen bleiben.
 
 ## Variante 3: Apache
 
-Webroot auf `public/` zeigen lassen:
+Webroot auf `public/` zeigen lassen. `AllowOverride FileInfo` genügt, damit die mitgelieferte `public/.htaccess` den Datenordner sperrt:
 
 ```apache
 <VirtualHost *:80>
@@ -37,9 +38,17 @@ Webroot auf `public/` zeigen lassen:
     DocumentRoot /var/www/rookycms/public
     <Directory /var/www/rookycms/public>
         Require all granted
-        AllowOverride None
+        AllowOverride FileInfo
     </Directory>
 </VirtualHost>
+```
+
+Wer `.htaccess` grundsätzlich abschaltet (`AllowOverride None`), sperrt die Ordner direkt im VirtualHost:
+
+```apache
+    <DirectoryMatch "^/var/www/rookycms/public/(data|backup)">
+        Require all denied
+    </DirectoryMatch>
 ```
 
 ## Variante 4: nginx + PHP-FPM
@@ -54,6 +63,9 @@ server {
     location / {
         try_files $uri $uri/ /index.php;
     }
+    # Datenbestand, Backups und Punktdateien nie ausliefern
+    location ~ ^/(data|backup)(/|$) { return 404; }
+    location ~ /\.                  { return 404; }
     location ~ \.php$ {
         include fastcgi_params;
         fastcgi_pass unix:/run/php/php8.4-fpm.sock;
@@ -82,10 +94,21 @@ rsync -a --delete \
   --exclude 'public/config.php' \
   --exclude 'public/data/' \
   --exclude 'public/uploads/' \
+  --exclude 'public/backup/' \
+  --exclude 'tools/' --exclude 'dist/' --exclude '.git/' --exclude '.github/' \
   <neue-version>/ <installation>/
 ```
 
 Alt-Datenbestände ohne Eintrags-IDs migriert die App beim ersten Aufruf selbst (mit Pre-Migration-Backup in `data/backups/`).
+
+Welche Version läuft, steht in der Fußzeile und im Seitenkopf (`<meta name="generator" content="RookyCMS X.Y.Z">`):
+
+```bash
+curl -s http://<host>/<pfad>/ | grep -o 'RookyCMS [0-9.]*'
+curl -s -o /dev/null -w '%{http_code}\n' http://<host>/<pfad>/data/entries.json   # 403/404, nie 200
+```
+
+**Update auf 1.2.0:** Kacheltexte, die im Browser gespeichert wurden, tragen Windows-Zeilenenden (CRLF). Bis 1.1.0 gingen dadurch Absätze verloren; ab 1.2.0 werden sie beim Anzeigen und beim nächsten Speichern vereinheitlicht — betroffene Kacheln zeigen ihre Absätze danach wie vorgesehen, ohne Zutun.
 
 ## Sicherung
 

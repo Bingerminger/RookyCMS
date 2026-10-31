@@ -11,14 +11,19 @@ public/                    ← Webroot
 ├── config.php             echte Konfiguration (pro Instanz, nicht im Repo)
 ├── CmsManager.php         Persistenz & Geschäftslogik
 ├── Category.php, Size.php Enums
-├── css/styles.css         Aurora, Glas-Optik, Masonry-Bento
-├── js/app.js              CMS-Klasse (Zustand, Rendern, Modal, DnD, Polling)
+├── css/styles.css         Aurora, Glas-Optik, Masonry-Bento, fünf Stile
+├── js/app.js              CMS-Klasse (Zustand, Rendern, Modal, DnD, Polling, Demo-Modus)
+├── .htaccess              Apache: data/, backup/ und Punktdateien → 404
 ├── uploads/               hochgeladene Bilder (pro Instanz)
 └── data/
     ├── entries.json       der komplette Datenbestand
     ├── entries.json.lock  Lock-Datei für serialisierte Schreibzugriffe
+    ├── auth-throttle.json Fehlversuche je Client (nur Hashes der Adresse)
     └── backups/           automatische Rotation (max. 15)
 demo-data/                 versionierte Demo-Kacheln + -Bilder (Seed beim Erststart)
+tools/selftest.php         Selbsttest ohne Abhängigkeiten (Markdown, Links, Persistenz, HTTP-API)
+tools/build-demo.sh        rendert die öffentliche Demo als statische Seite
+VERSION                    Release-Version (meta generator, Fußzeile, Quellcode-Link)
 ```
 
 ## Rendering-Modell: Server liefert Zustand, Client rendert
@@ -33,7 +38,7 @@ Jede Mutation (`save`, `delete`, `reorder`) antwortet mit dem **kompletten neuen
 
 Der Client fragt alle `AUTO_REFRESH_SECONDS` den Endpoint `api.php?action=entries&since=<version>` ab. `version` ist ein **Content-Hash** (`xxh128`) der Datendatei — nicht die mtime, die nur Sekundenauflösung hat. Ist nichts passiert, antwortet der Server winzig mit `{changed:false}` und es wird nichts gerendert.
 
-Das Polling pausiert bei offenem Modal und während eines Drags; bei `visibilitychange → visible` (Tablet-Wakeup) wird sofort gepollt.
+Das Polling pausiert bei offenem Modal, während eines Drags und solange der Tab verdeckt bzw. das Display aus ist; bei `visibilitychange → visible` (Tablet-Wakeup) wird sofort gepollt.
 
 ## Persistenz-Robustheit (JSON-Datei, trotzdem sicher)
 
@@ -59,13 +64,14 @@ Das Polling pausiert bei offenem Modal und während eines Drags; bei `visibility
 
 Reihenfolge in `CmsManager::parseMarkdown()`:
 
+0. **Text vereinheitlichen** (`cleanText()`): CRLF/CR → LF (Browser schicken Textareas mit CRLF), NUL-Bytes raus (NUL ist das Platzhalter-Zeichen)
 1. **Links extrahieren** (`[Text](URL)` → Platzhalter `\x00LINKn\x00`)
 2. **Alles escapen** (`htmlspecialchars`, ENT_QUOTES, UTF-8)
 3. Überschriften (`#`–`######`), Inline-Formate (fett/kursiv/code/strike), Listen
-4. **Links wieder einsetzen** — Text und URL werden dabei einzeln escaped, Ziel `target="_blank" rel="noopener"`
-5. Absätze: Doppel-Newline = `<p>`, einfache = `<br>`
+4. **Links wieder einsetzen** — nur mit erlaubtem Schema (`isSafeUrl()`, sonst bleibt der Linktext), Text und URL einzeln escaped, Ziel `target="_blank" rel="noopener"`
+5. Absätze zeilenweise: Leerzeile = neuer `<p>`, einfacher Umbruch = `<br>`; Überschriften und Listen bleiben eigene Blöcke — auch Text direkt darunter (ohne Leerzeile) wird ein Absatz
 
-Dadurch kann kein Nutzer-HTML durchrutschen — es gibt keinen Pfad, auf dem unescapeter Text ins DOM gelangt.
+Dadurch kann kein Nutzer-HTML durchrutschen — es gibt keinen Pfad, auf dem unescapeter Text ins DOM gelangt. `tools/selftest.php` prüft die Pipeline samt verschleierter Schemata.
 
 ## Masonry-Bento-Layout
 
@@ -74,6 +80,21 @@ Das Grid nutzt `grid-auto-rows: 2px`; **JS misst jede Kachel** (`layoutTiles()`)
 - Die JS-Konstanten `ROW_UNIT`/`GAP` müssen zu `grid-auto-rows`/`--gap` im CSS passen.
 - Spalten: 1/2/3/4/5/6 ab 0/640/960/1280/1600/2000 px; Grundgröße `min-height: 220px` (tall/large: 452px), Kachel-Schriftgröße `--tile-fs: 0.875rem`.
 - `wide`/`large` belegen 2 Spalten, `tall`/`large` bekommen die doppelte Grundhöhe; auf Mobile wird alles 1×1.
+- Spalten sind `minmax(0, 1fr)`, der Kacheltext bricht mit `overflow-wrap: anywhere` um — eine lange URL kann weder eine Spalte über den Viewport drücken noch unter dem `overflow: hidden` der Kachel verschwinden.
+
+## Öffentliche Demo (GitHub Pages)
+
+GitHub Pages hat kein PHP. `tools/build-demo.sh` startet deshalb den echten Server auf einer Wegwerf-Kopie (frisches `data/`, Seed aus `demo-data/`), speichert die gerenderte Seite als `index.html` mit `data-demo` an `<html>` und kopiert `css/`, `js/`, die Demo-Bilder und die Lizenz dazu. Der Bau bricht ab, wenn die API nicht antwortet, die Kachelzahl nicht stimmt oder die Seite ein Fehlerbanner zeigt.
+
+Im Browser erkennt `app.js` den Demo-Modus an `data-demo` und beantwortet die API in `demoFetch()` selbst: Lesen, Filtern, Suchen, Stile, Bearbeiten-Formular (Passwort `1234`) und Verschieben funktionieren, Speichern und Löschen werden mit einem Hinweis abgelehnt, Polling und Markdown-Vorschau entfallen. Eine normale Installation führt diesen Zweig nie aus. Neue API-Actions brauchen dort eine Antwort.
+
+`.github/workflows/pages.yml` baut die Demo aus dem neuesten Release-Tag (bei jedem veröffentlichten Release und von Hand); die Pages-Umgebung erlaubt dafür Deploys von Tags `v*`.
+
+## Selbsttest & Release-Stempel
+
+`php tools/selftest.php` läuft ohne Abhängigkeiten: Markdown- und Link-Sicherheit, Persistenz (Seed, Normalisierung, Reorder, korrupte Datei, Migration), die HTTP-API in einer Wegwerf-Kopie unter `php -S` (Auth, 422/405, Script-Block, Drosselung) und den Release-Stempel (`VERSION` = oberster Abschnitt in `CHANGELOG.md`). Die CI (`.github/workflows/ci.yml`) führt ihn auf PHP 8.3 und 8.4 aus, dazu einen Probebau der Demo.
+
+Die Datei `VERSION` ist die einzige Quelle der Release-Nummer: `index.php` schreibt sie in `<meta name="generator">` und in die Fußzeile, deren Quellcode-Link auf genau diesen Tag zeigt (`…/tree/vX.Y.Z`, AGPL-3.0 §13). Die Deploy-Prüfung vergleicht die ausgelieferte Kennung mit `VERSION`.
 
 ## Performance-Prinzipien
 

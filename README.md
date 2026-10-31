@@ -1,9 +1,15 @@
+<p align="center">
+  <img src=".github/social-preview.png" alt="RookyCMS — das Ein-Seiten-Dashboard fürs Zuhause und kleine Teams" width="100%">
+</p>
+
 # RookyCMS
 
 **Das Ein-Seiten-Dashboard fürs Zuhause und kleine Teams.**
 Monitoring-, Info- und Link-Kacheln in einem Bento-Grid mit Glas-Optik — betrieben mit nichts als PHP und einer JSON-Datei. Keine Datenbank, kein Composer, kein Build-Schritt, keine externen Requests.
 
-![RookyCMS Dashboard](docs/screenshots/dashboard.png)
+**▶ [Live-Demo ausprobieren](https://bingerminger.github.io/RookyCMS/)** — mit den 17 Beispiel-Kacheln, allen fünf Stilen und dem Bearbeiten-Modal (Passwort `1234`), ganz ohne Installation. Gespeichert wird in der Demo nichts.
+
+![RookyCMS Dashboard](docs/screenshots/dashboard.jpg)
 
 ## Warum RookyCMS?
 
@@ -11,9 +17,30 @@ Gebaut für den Dauerbetrieb auf einem **Wand- oder Küchen-Tablet im Intranet**
 
 - **Eine Seite, ein Modal.** Anlegen, Bearbeiten, Löschen, Umsortieren — ohne Seiten-Reload, ohne Adminbereich.
 - **JSON statt Datenbank.** Der komplette Bestand lebt in `data/entries.json` — mit exklusivem Lock, atomarem Schreiben und automatischer Backup-Rotation trotzdem robust.
-- **Ruhig im Betrieb.** Statischer Aurora-Hintergrund, kein `backdrop-filter`, keine Endlos-Animationen — keine GPU-Dauerlast auf Tablets. Leises Polling aktualisiert nur bei echten Änderungen.
-- **Tablet-taugliche Sicherheit.** Kein dauerhaftes Eingeloggt-Sein: Jede Schreibaktion fragt das Passwort frisch ab, es wird nie gespeichert. Das Wand-Tablet darf öffentlich hängen.
+- **Ruhig im Betrieb.** Statischer Aurora-Hintergrund, kein `backdrop-filter`, keine Endlos-Animationen — keine GPU-Dauerlast auf Tablets. Leises Polling aktualisiert nur bei echten Änderungen und ruht, solange der Bildschirm aus ist.
+- **Tablet-taugliche Sicherheit.** Kein dauerhaftes Eingeloggt-Sein: Jede Schreibaktion fragt das Passwort frisch ab, es wird nie gespeichert. Wer es durchprobieren will, wird nach fünf Fehlversuchen ausgebremst. Das Wand-Tablet darf öffentlich hängen.
+- **Fünf Stile, Tag und Nacht.** Aurora, Graphit, Fluent, Ubuntu und Nord — jeder mit Tag- und Nachtansicht, umschaltbar per Klick.
 - **Läuft überall, wo PHP läuft.** PHP 8.3+, Systemschriften, keine CDNs — auch im Intranet ohne Internetzugang.
+
+## Screenshots
+
+| Nacht (Aurora) | Tag (Aurora) |
+|---|---|
+| ![Aurora, Nachtansicht](docs/screenshots/dashboard.jpg) | ![Aurora, Tagansicht](docs/screenshots/hell.jpg) |
+
+| Graphit (Tag) | Fluent (Nacht) |
+|---|---|
+| ![Stil Graphit](docs/screenshots/stil-graphit.jpg) | ![Stil Fluent](docs/screenshots/stil-fluent.jpg) |
+
+| Ubuntu (Nacht) | Nord (Tag) |
+|---|---|
+| ![Stil Ubuntu](docs/screenshots/stil-ubuntu.jpg) | ![Stil Nord](docs/screenshots/stil-nord.jpg) |
+
+| Stil-Auswahl | Bearbeiten-Modal |
+|---|---|
+| ![Stil-Auswahl mit Vorschau](docs/screenshots/stilwahl.jpg) | ![Bearbeiten-Modal](docs/screenshots/modal.jpg) |
+
+<p align="center"><img src="docs/screenshots/mobile.jpg" alt="Smartphone-Ansicht" width="300"></p>
 
 ## Schnellstart
 
@@ -41,12 +68,11 @@ Danach: **Passwort in `public/config.php` ändern**, Demo-Kacheln nach Belieben 
 | Verschieben | Kachel per Drag & Drop ziehen; Drop im Freiraum hängt ans Ende |
 | Suchen | `/` fokussiert die Suche (matcht Titel, Text, Tags) |
 | Filtern | Kategorie-Chips in der Topbar, Zähler laufen live mit |
-| Theme | Sonne/Mond-Button wechselt zwischen Dark und Light |
+| Stil | Palette-Button: Aurora, Graphit, Fluent, Ubuntu oder Nord — mit Farbvorschau |
+| Tag / Nacht | Sonne/Mond-Button kehrt jeden Stil um |
 | Modal schließen | `ESC` |
 
-Jede Schreibaktion fragt das Passwort ab; nach dem Speichern (oder Abbrechen) ist man automatisch wieder abgemeldet.
-
-![Bearbeiten-Modal](docs/screenshots/modal.png)
+Jede Schreibaktion fragt das Passwort ab; nach dem Speichern (oder Abbrechen) ist man automatisch wieder abgemeldet. Stil und Tag/Nacht merkt sich jedes Gerät selbst.
 
 ### Kachelgrößen (Bento)
 
@@ -57,7 +83,7 @@ Jede Schreibaktion fragt das Passwort ab; nach dem Speichern (oder Abbrechen) is
 | Hoch | 1×2 |
 | Groß | 2×2 |
 
-Das Grid ist ein **Masonry-Layout**: Jede Kachel zeigt immer ihren kompletten Inhalt (nichts wird abgeschnitten), die Spaltenzahl wächst mit dem Viewport (1/2/3/4/5/6 Spalten ab 0/640/960/1280/1600/2000 px). Auf dem Smartphone werden alle Kacheln einspaltig.
+Das Grid ist ein **Masonry-Layout**: Jede Kachel zeigt immer ihren kompletten Inhalt (nichts wird abgeschnitten, auch lange Adressen brechen um), die Spaltenzahl wächst mit dem Viewport (1/2/3/4/5/6 Spalten ab 0/640/960/1280/1600/2000 px). Auf dem Smartphone werden alle Kacheln einspaltig.
 
 ### Markdown
 
@@ -70,9 +96,9 @@ Im Kacheltext unterstützt (Vorschau im Editor eingebaut):
 | `` `code` `` / `~~strike~~` | `code` / ~~strike~~ |
 | `[Text](URL)` | Link (öffnet in neuem Tab) |
 | `- Item` | Listen |
-| Leerzeile | Absatz |
+| Zeilenumbruch / Leerzeile | Umbruch / Absatz |
 
-Das HTML wird ausschließlich **serverseitig** und XSS-sicher erzeugt — der Client parst kein Markdown.
+Das HTML wird ausschließlich **serverseitig** und XSS-sicher erzeugt — der Client parst kein Markdown. Links (im Text wie im Feld „Link") gehen nur mit `http(s)`, `mailto`, `tel`, `ftp`, `smb`, `ssh`, `vnc`, `rdp` oder als relativer Pfad durch; `javascript:` & Co. bleiben reiner Text.
 
 ## Konfiguration
 
@@ -88,18 +114,28 @@ Akzentfarbe und Raster-Dichte: `public/css/styles.css` (`--accent-h/-s/-l` bzw. 
 
 ## Installation & Betrieb
 
-Kurzfassung: Webroot auf `public/` zeigen lassen (oder das Projekt in einen Webserver-Ordner legen und `…/public` aufrufen), PHP 8.3+ mit Schreibrecht auf `public/data/` und `public/uploads/` — mehr braucht es nicht. GD ist optional (verkleinert große Upload-Bilder automatisch).
+Kurzfassung: Webroot auf `public/` zeigen lassen (oder das Projekt in einen Webserver-Ordner legen und `…/public` aufrufen), PHP 8.3+ mit Schreibrecht auf `public/data/` und `public/uploads/` — mehr braucht es nicht. GD ist optional (verkleinert große Upload-Bilder automatisch). Unter Apache sperrt die mitgelieferte `public/.htaccess` den Datenordner; für nginx steht die passende Regel in der Installationsanleitung.
 
 Details für NAS (Synology Web Station), Apache, nginx und Updates: **[docs/INSTALL.md](docs/INSTALL.md)**
 
 ## Technik
 
-- **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** — Rendering-Modell, Persistenz-Robustheit (Lock + atomares Schreiben + Backups), Polling, Masonry-Layout, Performance-Prinzipien
+- **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** — Rendering-Modell, Persistenz-Robustheit (Lock + atomares Schreiben + Backups), Polling, Masonry-Layout, Demo-Modus, Performance-Prinzipien
 - **[docs/API.md](docs/API.md)** — die sechs AJAX-Endpoints mit Beispielen
-- **[docs/SECURITY.md](docs/SECURITY.md)** — Auth-Modell, Bedrohungsannahmen, Upload-Härtung
+- **[docs/SECURITY.md](docs/SECURITY.md)** — Auth-Modell, Drosselung, Bedrohungsannahmen, Upload-Härtung
 - **[CHANGELOG.md](CHANGELOG.md)** — Versionshistorie
 
 Stack: PHP 8.3+ (Enums, Readonly Properties, typed class constants), Vanilla JS (eine ES6-Klasse), CSS3 mit Custom Properties. Keine Abhängigkeiten.
+
+```
+public/                     Webroot: index.php, api.php, CmsManager.php, css/, js/, .htaccess
+demo-data/                  Demo-Kacheln + -Bilder (Startbestand beim Erststart)
+tools/selftest.php          Selbsttest ohne Abhängigkeiten: php tools/selftest.php
+tools/build-demo.sh         Öffentliche Demo als statische Seite (GitHub Pages)
+.github/workflows/ci.yml    Syntax + Selbsttest + Demo-Probebau bei jedem Push
+.github/workflows/pages.yml Baut + veröffentlicht die Demo (bei Releases, von Hand)
+VERSION                     Release-Version (steht auch im <head> und in der Fußzeile)
+```
 
 ## Herkunft
 
@@ -107,4 +143,12 @@ RookyCMS ist aus einem privaten Hausinfo-Dashboard („SimpleCMS") hervorgegange
 
 ## Lizenz
 
-[MIT](LICENSE) © 2026 Bingerminger
+Seit Version 1.2.0 steht RookyCMS unter der [GNU AGPL v3.0 oder neuer](LICENSE). In einfachen Worten:
+
+- **Zu Hause gehört es dir:** kostenlos nutzen, verändern, weitergeben — ohne Bedingungen, ohne Konto, ohne Gebühr.
+- **Nur eine Regel:** Wer eine *veränderte* Fassung anderen als Webdienst anbietet, gibt ihnen auch deren Quellcode. So bleibt RookyCMS frei und offen für alle.
+- **Nichts versteckt:** Die Fußzeile jeder Installation verlinkt den Quellcode genau der laufenden Version.
+
+Versionen bis 1.1.0 bleiben unter der MIT-Lizenz erhältlich, unter der sie erschienen sind. Beiträge erscheinen unter der Lizenz des Projekts — eine eigene Vereinbarung (CLA) ist nicht nötig.
+
+RookyCMS bringt keine fremden Bibliotheken, Schriften oder Dienste mit — Details in [CREDITS.md](CREDITS.md), Produktnamen in [TRADEMARKS.md](TRADEMARKS.md).

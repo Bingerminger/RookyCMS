@@ -6,6 +6,19 @@ require_once __DIR__ . '/Category.php';
 require_once __DIR__ . '/Size.php';
 require_once __DIR__ . '/config.load.php';
 
+header('X-Content-Type-Options: nosniff');
+
+/** Release-Version (Datei VERSION im Projektroot) — Kennung im <head> und Fußzeile. */
+$release = trim((string)@file_get_contents(__DIR__ . '/../VERSION')) ?: 'dev';
+
+/**
+ * Quellcode genau dieser Version (AGPL-3.0 §13: wer die App im Netz
+ * nutzt, erreicht ihren Quelltext). Wer eine veränderte Fassung
+ * anbietet, trägt hier sein eigenes Repository ein.
+ */
+const ROOKY_REPO = 'https://github.com/Bingerminger/RookyCMS';
+$sourceUrl = preg_match('/^\d+\.\d+\.\d+$/', $release) === 1 ? ROOKY_REPO . '/tree/v' . $release : ROOKY_REPO;
+
 $entries   = [];
 $version   = 'empty';
 $loadError = null;
@@ -40,6 +53,7 @@ function asset(string $path): string {
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="color-scheme" content="dark light">
     <meta name="theme-color" content="#0a0a0f">
+    <meta name="generator" content="RookyCMS <?= e($release) ?>">
     <title><?= e(SITE_TITLE) ?></title>
     <link rel="icon" href="favicon.png" type="image/png">
     <!-- Theme + Stil vor dem ersten Paint setzen (kein Aufblitzen des Defaults) -->
@@ -141,6 +155,7 @@ function asset(string $path): string {
         </div>
     <?php endif; ?>
     <div class="bento" id="bento" aria-live="polite"></div>
+    <p class="noresults" id="noresults" hidden>Keine Kachel passt zu Suche und Filter.</p>
     <div class="empty" id="empty" hidden>
         <div class="empty__art" aria-hidden="true">
             <svg viewBox="0 0 64 64" width="64" height="64"><rect x="6" y="6" width="22" height="22" rx="5" fill="none" stroke="currentColor" stroke-width="2" opacity=".5"/><rect x="34" y="6" width="22" height="22" rx="5" fill="none" stroke="currentColor" stroke-width="2" opacity=".35"/><rect x="6" y="34" width="22" height="22" rx="5" fill="none" stroke="currentColor" stroke-width="2" opacity=".35"/><rect x="34" y="34" width="22" height="22" rx="5" fill="none" stroke="currentColor" stroke-width="2" opacity=".7" stroke-dasharray="4 3"/></svg>
@@ -150,6 +165,12 @@ function asset(string $path): string {
         <button type="button" class="btn btn--primary" id="new-entry-empty">+ Erste Kachel anlegen</button>
     </div>
 </main>
+
+<footer class="site-foot">
+    RookyCMS <?= e($release) ?> · freie Software unter
+    <a href="https://www.gnu.org/licenses/agpl-3.0.html" target="_blank" rel="noopener">AGPL-3.0</a> ·
+    <a href="<?= e($sourceUrl) ?>" target="_blank" rel="noopener">Quellcode</a>
+</footer>
 
 <!-- =====================================================================
      Universelles Modal: Edit / Create / Delete / Password
@@ -280,12 +301,18 @@ function asset(string $path): string {
 <!-- Toasts -->
 <div class="toasts" id="toasts" aria-live="polite" aria-atomic="true"></div>
 
+<?php
+// JSON im <script>: <, >, & und Anführungszeichen als \u-Escapes, damit kein
+// Kachelinhalt (etwa „<!--<script>“) den Script-Block des Parsers aushebelt.
+const ROOKY_JSON_IN_SCRIPT = JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT
+    | JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE;
+?>
 <script>
     window.cmsConfig = {
         pollSeconds: <?= (int)AUTO_REFRESH_SECONDS ?>,
-        version: <?= json_encode($version) ?>
+        version: <?= json_encode($version, ROOKY_JSON_IN_SCRIPT) ?>
     };
-    window.cmsEntries = <?= json_encode($entries, JSON_UNESCAPED_UNICODE) ?>;
+    window.cmsEntries = <?= json_encode($entries, ROOKY_JSON_IN_SCRIPT) ?>;
 </script>
 <script src="<?= e(asset('js/app.js')) ?>" defer></script>
 

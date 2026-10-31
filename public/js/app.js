@@ -18,6 +18,23 @@
 const THEME_KEY = 'cms-theme';
 const STYLE_KEY = 'cms-style';
 
+// localStorage kann blockiert sein (Safari privat, gesperrte Website-Daten)
+// und wirft dann schon beim Zugriff — Theme/Stil gelten dann nur bis zum
+// Neuladen, die App läuft trotzdem.
+const store = {
+    get(key) { try { return localStorage.getItem(key); } catch { return null; } },
+    set(key, value) { try { localStorage.setItem(key, value); } catch { /* nur für diese Sitzung */ } },
+};
+
+// Öffentliche Demo (GitHub Pages, kein PHP): tools/build-demo.sh rendert
+// index.php einmal mit den Demo-Daten vor und setzt data-demo an <html>.
+// Dann beantwortet demoFetch() die API lokal: alles lässt sich ausprobieren,
+// gespeichert wird nichts. Eine normale Installation läuft hier nie hinein.
+const DEMO = document.documentElement.hasAttribute('data-demo');
+const DEMO_PASSWORD = '1234';
+const DEMO_REPO = 'https://github.com/Bingerminger/RookyCMS';
+const DEMO_MSG = 'In der Demo wird nichts gespeichert — RookyCMS selbst installieren: siehe GitHub.';
+
 // Auswählbare Stile. Jeder hat im CSS eine Tag- und Nachtvariante
 // ([data-style="…"][data-theme="…"]); swatch = zwei repräsentative
 // Farben (Fläche + Akzent) für die Vorschau im Popover.
@@ -42,6 +59,10 @@ class CMS {
         this.pwd = null; // Passwort nur im RAM, nur für die laufende Aktion
         this.draggingId = null;
         this.firstRender = true;
+        this.previewSeq = 0;
+        // Demo: zuletzt „gespeicherte" Reihenfolge, damit ein abgebrochenes
+        // Verschieben wie im Echtbetrieb zurückspringt.
+        this.demoSaved = this.entries.slice();
 
         // Altbestand aufräumen: frühere Versionen hielten das Passwort
         // im sessionStorage — auf Bestandsgeräten entfernen.
@@ -65,6 +86,7 @@ class CMS {
     }
 
     init() {
+        if (DEMO) this.showDemoBanner();
         this.bindTheme();
         this.bindStyle();
         this.bindSearch();
@@ -114,6 +136,11 @@ class CMS {
             .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
     }
 
+    /** Dateiname für url('…'): encodeURIComponent lässt ' ( ) stehen — die beenden sonst den CSS-String. */
+    uploadPath(name) {
+        return encodeURIComponent(name).replace(/['()]/g, c => '%' + c.charCodeAt(0).toString(16).toUpperCase());
+    }
+
     formatDate(iso) {
         const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso || '');
         return m ? `${m[3]}.${m[2]}.${m[1]}` : '';
@@ -135,10 +162,11 @@ class CMS {
         const tags = (e.tags || []).slice(0, 4)
             .map(t => `<span class="tag">#${this.esc(t)}</span>`).join('');
         const cover = e.image
-            ? `<div class="tile__cover" style="background-image:url('uploads/${encodeURIComponent(e.image)}')"></div>`
+            ? `<div class="tile__cover" style="background-image:url('uploads/${this.uploadPath(e.image)}')"></div>`
             : '';
-        const link = e.link
-            ? `<a class="tile__link" href="${this.esc(e.link)}" target="_blank" rel="noopener" draggable="false">Öffnen
+        // href prüft der Server (CmsManager::isSafeUrl) — javascript: & Co. kommen leer an
+        const link = e.href
+            ? `<a class="tile__link" href="${this.esc(e.href)}" target="_blank" rel="noopener" draggable="false">Öffnen
                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></a>`
             : '<span></span>';
 
@@ -185,6 +213,8 @@ class CMS {
 
         const empty = document.getElementById('empty');
         if (empty) empty.hidden = this.entries.length > 0;
+        const none = document.getElementById('noresults');
+        if (none) none.hidden = visible.length > 0 || this.entries.length === 0;
 
         this.updateCategoryCounts();
         this.layoutTiles();
@@ -228,13 +258,13 @@ class CMS {
 
     // ---------- Theme ----------
     bindTheme() {
-        const saved = localStorage.getItem(THEME_KEY) || 'dark';
-        document.documentElement.setAttribute('data-theme', saved);
+        const saved = store.get(THEME_KEY);
+        document.documentElement.setAttribute('data-theme', saved === 'light' ? 'light' : 'dark');
         document.getElementById('theme-toggle').addEventListener('click', () => {
             const now = document.documentElement.getAttribute('data-theme');
             const next = now === 'dark' ? 'light' : 'dark';
             document.documentElement.setAttribute('data-theme', next);
-            localStorage.setItem(THEME_KEY, next);
+            store.set(THEME_KEY, next);
         });
     }
 
@@ -244,7 +274,7 @@ class CMS {
     // unabhängig um. Das Passwort ist hier nicht im Spiel (reine Ansicht).
     bindStyle() {
         const valid = new Set(STYLES.map(s => s.id));
-        let current = localStorage.getItem(STYLE_KEY) || 'aurora';
+        let current = store.get(STYLE_KEY) || 'aurora';
         if (!valid.has(current)) current = 'aurora';
         document.documentElement.setAttribute('data-style', current);
 
@@ -278,7 +308,7 @@ class CMS {
         opts.forEach(o => o.addEventListener('click', () => {
             const id = o.dataset.styleId;
             document.documentElement.setAttribute('data-style', id);
-            localStorage.setItem(STYLE_KEY, id);
+            store.set(STYLE_KEY, id);
             markActive(id);
             close();
         }));
@@ -408,7 +438,7 @@ class CMS {
                 });
                 if (r && r.success) {
                     this.applyState(r);
-                    this.toast('Reihenfolge gespeichert', 'success');
+                    this.toast(DEMO ? 'Reihenfolge geändert — in der Demo bis zum Neuladen' : 'Reihenfolge gespeichert', 'success');
                 }
             } catch (err) {
                 this.toast(err.message || 'Sortieren fehlgeschlagen', 'error');
@@ -512,6 +542,18 @@ class CMS {
         this.openModal('auth');
     }
 
+    /**
+     * 401 mitten in einer offenen Aktion (Passwort inzwischen geändert):
+     * erneut fragen, dann mit unveränderten Eingaben weitermachen —
+     * slot ist der Dialog, zu dem es danach zurückgeht.
+     */
+    reauth(slot, retry) {
+        this.pwd = null;
+        this.pendingAuthFn = () => { this.showSlot(slot); retry(); };
+        this.showSlot('auth');
+        requestAnimationFrame(() => document.getElementById('auth-password').focus());
+    }
+
     async verifyAndContinue(password) {
         if (!password) return;
         try {
@@ -612,6 +654,7 @@ class CMS {
             }
         } catch (err) {
             this.toast(err.message || 'Speichern fehlgeschlagen', 'error');
+            if (err.status === 401) this.reauth('form', () => this.submitEntry(form));
         } finally {
             submitBtn.disabled = false;
             submitBtn.textContent = 'Speichern';
@@ -645,6 +688,7 @@ class CMS {
             }
         } catch (err) {
             this.toast(err.message || 'Löschen fehlgeschlagen', 'error');
+            if (err.status === 401) this.reauth('delete', () => this.confirmDelete());
         }
     }
 
@@ -657,12 +701,19 @@ class CMS {
 
         const update = async () => {
             if (pv.hidden) return;
+            if (DEMO) {
+                pv.textContent = 'Die Vorschau rendert der PHP-Server — in der statischen Demo gibt es keinen.';
+                return;
+            }
+            // Antworten können sich überholen: nur die jüngste Anfrage zählt
+            const seq = ++this.previewSeq;
             try {
                 const r = await fetch('api.php?action=preview', {
                     method: 'POST',
                     body: new URLSearchParams({ text: ta.value }),
                 });
-                if (r.ok) pv.innerHTML = await r.text();
+                const html = r.ok ? await r.text() : null;
+                if (html !== null && seq === this.previewSeq) pv.innerHTML = html;
             } catch { /* ignore */ }
         };
 
@@ -687,14 +738,20 @@ class CMS {
         const delFlag = document.getElementById('f-delete-image');
         const hint    = document.querySelector('.filedrop__hint');
 
+        // Abgelehnte Datei aus dem Feld nehmen — sonst ginge sie beim
+        // Speichern trotzdem mit hoch.
+        const reject = (msg) => {
+            input.value = '';
+            this.toast(msg, 'error');
+        };
         const handleFile = (file) => {
             if (!file) return;
             if (!file.type.startsWith('image/')) {
-                this.toast('Nur Bilder erlaubt', 'error');
+                reject('Nur Bilder erlaubt');
                 return;
             }
             if (file.size > 2 * 1024 * 1024) {
-                this.toast('Datei zu groß (max. 2 MB)', 'error');
+                reject('Datei zu groß (max. 2 MB)');
                 return;
             }
             const reader = new FileReader();
@@ -739,9 +796,12 @@ class CMS {
 
     // ---------- Leises Polling (statt Seiten-Reload) ----------
     setupPolling() {
+        if (DEMO) return; // statischer Abzug — es gibt nichts nachzuladen
         const sec = window.cmsConfig?.pollSeconds || 0;
         if (sec > 0) {
-            setInterval(() => this.refreshFromServer(), sec * 1000);
+            // Im Hintergrund (Tab verdeckt, Display aus) nicht pollen —
+            // visibilitychange holt beim Zurückkommen sofort nach.
+            setInterval(() => { if (!document.hidden) this.refreshFromServer(); }, sec * 1000);
         }
         // Beim Zurückkehren zum Tab (z. B. Tablet-Wakeup) sofort aktualisieren
         document.addEventListener('visibilitychange', () => {
@@ -766,6 +826,7 @@ class CMS {
 
     // ---------- Fetch helper ----------
     async fetchJSON(url, opts = {}) {
+        if (DEMO) return this.demoFetch(url, opts);
         const headers = opts.headers || {};
         if (opts.authed && this.pwd) {
             headers['X-Auth-Password'] = this.pwd;
@@ -782,12 +843,48 @@ class CMS {
             if (r.status === 401) {
                 this.pwd = null;
             }
-            throw new Error(data?.error || `HTTP ${r.status}`);
+            const err = new Error(data?.error || `HTTP ${r.status}`);
+            err.status = r.status;
+            throw err;
         }
         if (data === null) {
             throw new Error('Unerwartete Server-Antwort');
         }
         return data;
+    }
+
+    // ---------- Öffentliche Demo ----------
+    /** Beantwortet die API-Aufrufe der Demo lokal (Antwortformat wie api.php). */
+    async demoFetch(url, opts) {
+        const action = new URL(url, location.href).searchParams.get('action');
+        const body = opts.body instanceof URLSearchParams ? opts.body : null;
+        switch (action) {
+            case 'entries': {
+                const since = new URL(url, location.href).searchParams.get('since');
+                return since
+                    ? { success: true, changed: false, version: this.version }
+                    : { success: true, changed: true, version: this.version, entries: this.demoSaved.slice() };
+            }
+            case 'verify':
+                if (body?.get('password') !== DEMO_PASSWORD) {
+                    throw new Error(`Falsches Passwort — in der Demo lautet es ${DEMO_PASSWORD}`);
+                }
+                return { success: true };
+            case 'reorder':
+                this.demoSaved = this.entries.slice();
+                return { success: true, version: this.version, entries: this.demoSaved.slice() };
+            default: // save, delete
+                throw new Error(DEMO_MSG);
+        }
+    }
+
+    showDemoBanner() {
+        const bar = document.createElement('div');
+        bar.className = 'demo-banner';
+        bar.innerHTML = '<strong>Live-Demo</strong> — Filter, Suche, Stile, Verschieben und Bearbeiten ausprobieren '
+            + `(Passwort <code>${DEMO_PASSWORD}</code>). Gespeichert wird nichts. `
+            + `<a href="${DEMO_REPO}" target="_blank" rel="noopener">RookyCMS selbst installieren ›</a>`;
+        document.querySelector('main.page')?.prepend(bar);
     }
 
     // ---------- Toasts ----------

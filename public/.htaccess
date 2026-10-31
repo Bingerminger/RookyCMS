@@ -1,0 +1,29 @@
+# RookyCMS — Apache-Regeln (z. B. Synology Web Station)
+#
+# Seit 1.2.0. data/ enthält den kompletten Datenbestand samt Backups — auch
+# von gelöschten Kacheln — und die Drossel-Datei der Passwortprüfung;
+# backup/ ältere Handsicherungen. Die App liest beides selbst (api.php),
+# direkt per URL gibt es 404, ebenso für Punktdateien.
+#
+# Nur Direktiven, für die AllowOverride FileInfo reicht. Require/Deny
+# verlangten AuthConfig und würden bei engerer Konfiguration jede Anfrage
+# mit 500 beantworten. nginx liest diese Datei nicht — siehe docs/INSTALL.md.
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteRule ^(data|backup)(/|$) - [R=404,L]
+  RewriteRule (^|/)\. - [R=404,L]
+</IfModule>
+
+# Rückfall ohne mod_rewrite: unter public/ wird regulär keine .json- oder
+# .lock-Datei ausgeliefert — damit sind Datenbestand und Backups auch so zu.
+<IfModule !mod_rewrite.c>
+  <IfModule mod_alias.c>
+    RedirectMatch 404 "\.(json|lock)$"
+    RedirectMatch 404 "/\."
+  </IfModule>
+</IfModule>
+
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+</IfModule>
