@@ -380,7 +380,7 @@
     position: relative;
     inset: auto;
     flex-shrink: 0;
-    height: 112px;
+    height: 88px;   /* Vollfarb-Bilder als Kategorie-Band sollen nicht erschlagen */
     margin: -12px -14px 2px;
     opacity: 1;
     filter: none;
