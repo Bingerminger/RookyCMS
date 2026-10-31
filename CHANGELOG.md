@@ -2,7 +2,19 @@
 
 Alle nennenswerten Änderungen an RookyCMS.
 
-## [1.2.0] — 2026-10-31
+## [1.2.1] — 2026-10-31
+
+Live-Demo, AGPL-Lizenz und ein gründliches Review — neu veröffentlicht.
+Inhaltlich identisch mit 1.2.0: Die Git-Historie wurde bereinigt (unter
+anderem ist ein früheres Demo-Bild unklarer Herkunft nun auch aus allen alten
+Ständen entfernt). Weil GitHub das Release 1.2.0 als unveränderlich gesperrt
+hatte, musste es dafür zurückgezogen werden; die Versionsnummer 1.2.0 wird
+nicht mehr vergeben. Alle Änderungen stehen unter 1.2.0.
+
+- Tags `v1.0.0` und `v1.1.0` zeigen auf die bereinigten Stände; ihre Inhalte
+  sind bis auf das ersetzte Demo-Bild unverändert.
+
+## [1.2.0] — 2026-10-31 (zurückgezogen, siehe 1.2.1)
 
 Live-Demo, AGPL-Lizenz und ein gründliches Review. Ausprobieren geht jetzt
 ohne Installation, und eine Reihe von Fehlern aus dem Alltag am Wand-Tablet
